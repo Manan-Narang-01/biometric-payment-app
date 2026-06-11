@@ -1,0 +1,210 @@
+{% extends "layout.html" %}
+{% block title %}Profile & Security{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Profile & Security</h1>
+    <p class="page-subtitle">Manage your biometric devices, session settings, and account</p>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Profile info -->
+  <div class="col-lg-4">
+    <div class="bp-card">
+      <div class="bp-card-body text-center">
+        <div class="profile-avatar-large" id="profileAvatarLarge">
+          {{ user.display_name[0].upper() if user else 'U' }}
+        </div>
+        <h3 class="mt-3 mb-1" id="profileDisplayName">{{ user.display_name if user else '' }}</h3>
+        <div class="text-muted small mb-1">@<span id="profileUsername">{{ user.username if user else '' }}</span></div>
+        <div class="text-muted small mb-3" id="profileEmail">{{ user.email if user else '' }}</div>
+        <div class="profile-badge">
+          <i class="bi bi-shield-fill-check me-1 text-bp-green"></i>
+          Verified Account
+        </div>
+      </div>
+      <div class="bp-card-footer">
+        <button class="btn-bp-outline w-100" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+          <i class="bi bi-pencil me-2"></i>Edit Profile
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right column -->
+  <div class="col-lg-8">
+
+    <!-- Biometric Devices -->
+    <div class="bp-card mb-4">
+      <div class="bp-card-header">
+        <h3 class="card-title-bp"><i class="bi bi-fingerprint me-2 text-bp-green"></i>Biometric Devices</h3>
+        <button class="btn-bp-outline btn-sm-bp" id="addBiometricBtn">
+          <i class="bi bi-plus me-1"></i>Add Device
+        </button>
+      </div>
+      <div class="bp-card-body p-0">
+        <div id="credentialsList" class="device-list">
+          <div class="device-loading"><div class="spinner-border text-bp-green spinner-border-sm"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trusted Devices -->
+    <div class="bp-card mb-4">
+      <div class="bp-card-header">
+        <h3 class="card-title-bp"><i class="bi bi-laptop me-2 text-bp-green"></i>Trusted Devices</h3>
+      </div>
+      <div class="bp-card-body p-0">
+        <div id="devicesList" class="device-list">
+          <div class="device-loading"><div class="spinner-border text-bp-green spinner-border-sm"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bank Accounts -->
+    <div class="bp-card mb-4">
+      <div class="bp-card-header">
+        <h3 class="card-title-bp"><i class="bi bi-bank me-2 text-bp-green"></i>Bank Accounts</h3>
+        <button class="btn-bp-outline btn-sm-bp" id="addBankBtn">
+          <i class="bi bi-plus me-1"></i>Add Account
+        </button>
+      </div>
+      <div class="bp-card-body p-0">
+        <div id="bankAccountsList" class="device-list">
+          <div class="device-loading"><div class="spinner-border text-bp-green spinner-border-sm"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Security Activity -->
+    <div class="bp-card">
+      <div class="bp-card-header">
+        <h3 class="card-title-bp"><i class="bi bi-shield-exclamation me-2 text-bp-green"></i>Security Activity</h3>
+      </div>
+      <div class="bp-card-body p-0">
+        <div id="securityLogsList" class="security-log-list">
+          <div class="device-loading"><div class="spinner-border text-bp-green spinner-border-sm"></div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content bp-modal">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Profile</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Display name</label>
+          <input type="text" id="editDisplayName" class="form-control bp-input" value="{{ user.display_name if user else '' }}">
+        </div>
+        <div class="form-group mt-3">
+          <label class="form-label">Avatar color</label>
+          <input type="color" id="editAvatarColor" class="form-control bp-input" value="{{ user.avatar_color if user else '#00c896' }}" style="height:2.5rem">
+        </div>
+        <div class="form-group mt-3">
+          <label class="form-label"><i class="bi bi-phone me-1 text-bp-green"></i>Phone number <span class="text-muted">(optional)</span></label>
+          <input type="tel" id="editPhoneNumber" class="form-control bp-input"
+                 placeholder="+91 9876543210"
+                 value="{{ user.phone_number if user and user.phone_number else '' }}">
+        </div>
+        <div class="form-group mt-3">
+          <label class="form-label"><i class="bi bi-bank me-1 text-bp-green"></i>UPI ID <span class="text-muted">(optional)</span></label>
+          <input type="text" id="editUpiId" class="form-control bp-input"
+                 placeholder="yourname@upi"
+                 value="{{ user.upi_id if user and user.upi_id else '' }}">
+        </div>
+        <div id="editProfileError" class="auth-error d-none mt-3"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-bp-ghost" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn-bp-primary" id="saveProfileBtn">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Add Bank Account Modal -->
+<div class="modal fade" id="addBankModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content bp-modal">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-bank me-2 text-bp-green"></i>Add Bank Account</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <!-- Step 1: Biometric verify -->
+      <div id="bankVerifyStep">
+        <div class="modal-body text-center py-4">
+          <div class="bio-pulse-icon mx-auto mb-3"><i class="bi bi-fingerprint"></i></div>
+          <p class="mb-1 fw-semibold">Biometric verification required</p>
+          <p class="text-muted small">Verify your identity before adding a bank account.</p>
+          <div id="bankVerifyError" class="auth-error d-none mt-3"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-bp-ghost" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn-bp-primary" id="bankVerifyBtn">
+            <i class="bi bi-fingerprint me-2"></i>Verify Identity
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 2: Bank form (shown after biometric) -->
+      <div id="bankFormStep" class="d-none">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Account holder name</label>
+            <input type="text" id="bankHolderName" class="form-control bp-input" placeholder="Full name on account">
+          </div>
+          <div class="form-group mt-3">
+            <label class="form-label">Bank name</label>
+            <input type="text" id="bankName" class="form-control bp-input" placeholder="e.g. State Bank of India">
+          </div>
+          <div class="form-group mt-3">
+            <label class="form-label">Account number</label>
+            <input type="text" id="bankAccountNumber" class="form-control bp-input" placeholder="Account number">
+          </div>
+          <div class="form-group mt-3">
+            <label class="form-label">IFSC / Routing code</label>
+            <input type="text" id="bankIfsc" class="form-control bp-input" placeholder="e.g. SBIN0001234">
+          </div>
+          <div class="form-group mt-3">
+            <label class="form-label">Account type</label>
+            <select id="bankAccountType" class="form-control bp-input">
+              <option value="savings">Savings</option>
+              <option value="current">Current</option>
+              <option value="checking">Checking</option>
+            </select>
+          </div>
+          <div class="form-check mt-3">
+            <input class="form-check-input" type="checkbox" id="bankIsPrimary">
+            <label class="form-check-label text-muted small" for="bankIsPrimary">Set as primary account</label>
+          </div>
+          <div id="bankFormError" class="auth-error d-none mt-3"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-bp-ghost" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn-bp-primary" id="saveBankBtn">
+            <i class="bi bi-check-lg me-2"></i>Save Account
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="/static/js/webauthn.js"></script>
+<script src="/static/js/profile.js"></script>
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Create Account{% endblock %}
+
+{% block body %}
+<div class="auth-page">
+  <div class="auth-bg-grid"></div>
+
+  <div class="auth-container">
+    <div class="auth-brand">
+      <div class="auth-brand-icon"><i class="bi bi-fingerprint"></i></div>
+      <h1 class="auth-brand-name">BioPay</h1>
+      <p class="auth-brand-sub">Biometric Payments Platform</p>
+    </div>
+
+    <div class="auth-card" id="authCard">
+
+      <!-- Step 1: Account details -->
+      <div class="auth-step active" id="step1">
+        <h2 class="auth-title">Create account</h2>
+        <p class="auth-subtitle">No password needed — your biometrics are your key.</p>
+
+        <div class="form-group">
+          <label class="form-label">Display name</label>
+          <div class="input-icon-wrap">
+            <i class="bi bi-person"></i>
+            <input type="text" id="displayName" class="form-control bp-input" placeholder="Your full name" autocomplete="name">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <div class="input-icon-wrap">
+            <i class="bi bi-at"></i>
+            <input type="text" id="username" class="form-control bp-input" placeholder="choose_a_username" autocomplete="username">
+          </div>
+          <div class="input-hint">3–50 characters, letters, numbers, underscores</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Email address</label>
+          <div class="input-icon-wrap">
+            <i class="bi bi-envelope"></i>
+            <input type="email" id="email" class="form-control bp-input" placeholder="you@example.com" autocomplete="email">
+          </div>
+        </div>
+
+        <div id="step1Error" class="auth-error d-none"></div>
+
+        <button class="btn-bp-primary w-100 mt-3" id="step1Btn">
+          Continue <i class="bi bi-arrow-right"></i>
+        </button>
+
+        <div class="auth-divider"><span>Already have an account?</span></div>
+        <a href="/auth/login" class="btn-bp-ghost w-100">Sign in with biometrics</a>
+      </div>
+
+      <!-- Step 2: Biometric enrollment -->
+      <div class="auth-step" id="step2">
+        <div class="biometric-enroll-icon">
+          <div class="bio-ring bio-ring-1"></div>
+          <div class="bio-ring bio-ring-2"></div>
+          <i class="bi bi-fingerprint bio-icon"></i>
+        </div>
+        <h2 class="auth-title">Register your biometric</h2>
+        <p class="auth-subtitle">Use Windows Hello, Touch ID, or your device's built-in biometric sensor.</p>
+
+        <div class="device-name-wrap">
+          <label class="form-label">Device name</label>
+          <input type="text" id="deviceName" class="form-control bp-input" placeholder="e.g. My Laptop" value="My Device">
+        </div>
+
+        <div id="step2Error" class="auth-error d-none"></div>
+
+        <button class="btn-bp-primary w-100 mt-3" id="enrollBtn">
+          <i class="bi bi-fingerprint me-2"></i>Enroll Biometric
+        </button>
+        <button class="btn-bp-ghost w-100 mt-2" id="backBtn">
+          <i class="bi bi-arrow-left me-2"></i>Back
+        </button>
+      </div>
+
+      <!-- Step 3: Success -->
+      <div class="auth-step" id="step3">
+        <div class="success-icon">
+          <i class="bi bi-shield-fill-check"></i>
+        </div>
+        <h2 class="auth-title">You're all set!</h2>
+        <p class="auth-subtitle">Your biometric has been registered. Sign in anytime with a touch or glance.</p>
+        <a href="/auth/login" class="btn-bp-primary w-100 mt-3">
+          Sign in now <i class="bi bi-arrow-right ms-2"></i>
+        </a>
+      </div>
+
+    </div>
+
+    <div class="auth-security-note">
+      <i class="bi bi-shield-lock"></i>
+      Biometric data never leaves your device · FIDO2 / WebAuthn standard
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/webauthn.js"></script>
+<script src="/static/js/register.js"></script>
+{% endblock %}

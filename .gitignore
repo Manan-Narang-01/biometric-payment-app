@@ -1,0 +1,43 @@
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+.venv/
+venv/
+env/
+
+# Alembic generated versions (keep structure, ignore compiled cache)
+backend/alembic/__pycache__/
+frontend/app/__pycache__/
+frontend/app/blueprints/__pycache__/
+
+# Docker volumes / data
+postgres_data/
+redis_data/
+
+# SSL certs (generated locally)
+nginx/ssl/
+
+# Logs
+*.log
+nginx_logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp

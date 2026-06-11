@@ -1,0 +1,143 @@
+{% extends "layout.html" %}
+{% block title %}Send Money{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Send Money</h1>
+    <p class="page-subtitle">Transfer instantly to any BioPay user</p>
+  </div>
+</div>
+
+<div class="row g-4 justify-content-center">
+  <div class="col-lg-7">
+    <div class="bp-card payment-card">
+      <div class="bp-card-header">
+        <h3 class="card-title-bp"><i class="bi bi-arrow-up-right-circle me-2 text-bp-green"></i>Transfer Details</h3>
+      </div>
+      <div class="bp-card-body">
+
+        <!-- Step 1: Recipient -->
+        <div class="send-step active" id="sendStep1">
+          <div class="form-group">
+            <label class="form-label">Send to</label>
+            <div class="input-icon-wrap">
+              <i class="bi bi-at"></i>
+              <input type="text" id="recipientInput" class="form-control bp-input"
+                     placeholder="username, phone or UPI ID" autocomplete="off">
+            </div>
+            <div id="recipientSuggestions" class="suggestions-dropdown"></div>
+            <div id="recipientInfo" class="recipient-info d-none">
+              <div class="recipient-avatar" id="recipientAvatar"></div>
+              <div>
+                <div class="recipient-name" id="recipientDisplayName"></div>
+                <div class="recipient-username" id="recipientUsername"></div>
+              </div>
+              <i class="bi bi-check-circle-fill text-bp-green ms-auto"></i>
+            </div>
+          </div>
+
+          <div class="form-group mt-3">
+            <label class="form-label">Amount</label>
+            <div class="amount-input-wrap">
+              <span class="amount-currency">$</span>
+              <input type="number" id="amountInput" class="form-control bp-input amount-input"
+                     placeholder="0.00" min="0.01" step="0.01">
+            </div>
+            <div class="quick-amounts">
+              <button class="quick-amount-btn" data-amount="10">$10</button>
+              <button class="quick-amount-btn" data-amount="25">$25</button>
+              <button class="quick-amount-btn" data-amount="50">$50</button>
+              <button class="quick-amount-btn" data-amount="100">$100</button>
+            </div>
+          </div>
+
+          <div class="form-group mt-3">
+            <label class="form-label">Note <span class="text-muted">(optional)</span></label>
+            <div class="input-icon-wrap">
+              <i class="bi bi-chat-left-text"></i>
+              <input type="text" id="descInput" class="form-control bp-input" placeholder="What's it for?">
+            </div>
+          </div>
+
+          <div id="sendStep1Error" class="auth-error d-none mt-3"></div>
+
+          <div class="fee-estimate mt-3" id="feeEstimate">
+            <div class="fee-row">
+              <span>Amount</span><span id="feeAmount">—</span>
+            </div>
+            <div class="fee-row">
+              <span>Fee (0.1%)</span><span id="feeFee">—</span>
+            </div>
+            <div class="fee-row fee-total">
+              <span>Total</span><span id="feeTotal">—</span>
+            </div>
+          </div>
+
+          <button class="btn-bp-primary w-100 mt-3" id="sendReviewBtn" disabled>
+            Review Transfer <i class="bi bi-arrow-right ms-2"></i>
+          </button>
+        </div>
+
+        <!-- Step 2: Biometric confirm -->
+        <div class="send-step" id="sendStep2">
+          <div class="confirm-summary">
+            <div class="confirm-row">
+              <span>To</span>
+              <span id="confirmRecipient" class="fw-semibold"></span>
+            </div>
+            <div class="confirm-row">
+              <span>Amount</span>
+              <span id="confirmAmount" class="fw-semibold text-bp-green"></span>
+            </div>
+            <div class="confirm-row">
+              <span>Fee</span>
+              <span id="confirmFee"></span>
+            </div>
+            <div class="confirm-row confirm-total">
+              <span>Total deducted</span>
+              <span id="confirmTotal" class="fw-bold"></span>
+            </div>
+          </div>
+
+          <div class="biometric-prompt mt-4">
+            <div class="bio-pulse-icon">
+              <i class="bi bi-fingerprint"></i>
+            </div>
+            <p class="bio-prompt-text">Verify your identity to complete this transfer</p>
+          </div>
+
+          <div id="sendStep2Error" class="auth-error d-none mt-3"></div>
+
+          <button class="btn-bp-primary w-100 mt-3" id="confirmSendBtn">
+            <i class="bi bi-fingerprint me-2"></i>Authenticate & Send
+          </button>
+          <button class="btn-bp-ghost w-100 mt-2" id="sendBackBtn">
+            <i class="bi bi-arrow-left me-2"></i>Back
+          </button>
+        </div>
+
+        <!-- Step 3: Success -->
+        <div class="send-step" id="sendStep3">
+          <div class="send-success">
+            <div class="success-icon"><i class="bi bi-check-circle-fill"></i></div>
+            <h3>Transfer complete!</h3>
+            <p id="successMsg"></p>
+            <div class="success-ref" id="successRef"></div>
+            <a href="/" class="btn-bp-primary w-100 mt-3">Back to dashboard</a>
+            <button class="btn-bp-ghost w-100 mt-2" id="sendAnotherBtn">Send another</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="/static/js/webauthn.js"></script>
+<script src="/static/js/send.js"></script>
+{% endblock %}

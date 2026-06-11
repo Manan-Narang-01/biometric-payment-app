@@ -1,0 +1,120 @@
+"""Auth endpoints: register, token refresh, logout."""
+import uuid
+from datetime import datetime, timezone, timedelta
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+import structlog
+
+from app.core.database import get_db
+from app.core.config import settings
+from app.core.redis_client import get_redis
+from app.core.security import (
+    create_access_token, create_refresh_token, decode_token, get_current_active_user
+)
+from app.models import User, UserSession, SecurityLog, SecurityEventType
+from app.schemas import UserRegisterRequest, UserResponse, TokenResponse, RefreshTokenRequest
+from app.services.wallet_service import wallet_service
+
+router = APIRouter()
+logger = structlog.get_logger()
+
+
+@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+async def register_user(
+    payload: UserRegisterRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Register a new user account (no password — biometric only)."""
+    # Check uniqueness
+    result = await db.execute(
+        select(User).where(
+            (User.username == payload.username) | (User.email == payload.email)
+        )
+    )
+    if result.scalar_one_or_none():
+        raise HTTPException(status_code=400, detail="Username or email already registered")
+
+    user = User(
+        username=payload.username,
+        email=payload.email,
+        display_name=payload.display_name,
+    )
+    db.add(user)
+    await db.flush()
+
+    # Auto-create wallet
+    await wallet_service.create_wallet(user, db)
+    await db.commit()
+    await db.refresh(user)
+    return user
+
+
+@router.post("/refresh", response_model=TokenResponse)
+async def refresh_token(
+    payload: RefreshTokenRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Refresh access token using refresh token."""
+    token_data = decode_token(payload.refresh_token)
+    if token_data.get("type") != "refresh":
+        raise HTTPException(status_code=401, detail="Invalid token type")
+
+    # Check refresh token not revoked
+    redis = get_redis()
+    jti = token_data.get("jti")
+    if await redis.exists(f"revoked:refresh:{jti}"):
+        raise HTTPException(status_code=401, detail="Token has been revoked")
+
+    user_id = token_data["sub"]
+    session_id = token_data["session_id"]
+
+    result = await db.execute(select(User).where(User.id == user_id, User.is_active == True))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+
+    # Revoke old refresh token
+    ttl = int(token_data["exp"] - datetime.now(timezone.utc).timestamp())
+    if ttl > 0:
+        await redis.setex(f"revoked:refresh:{jti}", ttl, "1")
+
+    # Issue new tokens
+    new_session_id = str(uuid.uuid4())
+    access_token = create_access_token(user.id, new_session_id)
+    new_refresh_token = create_refresh_token(user.id, new_session_id)
+
+    await redis.setex(
+        f"session:{new_session_id}",
+        settings.SESSION_TIMEOUT_MINUTES * 60,
+        user.id,
+    )
+
+    return TokenResponse(
+        access_token=access_token,
+        refresh_token=new_refresh_token,
+        expires_in=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        user=UserResponse.model_validate(user),
+    )
+
+
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+async def logout(
+    request: Request,
+    current_user: User = Depends(get_current_active_user),
+):
+    """Invalidate current session."""
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer "):
+        from app.core.security import decode_token
+        token_data = decode_token(auth_header[7:])
+        session_id = token_data.get("session_id")
+        redis = get_redis()
+        await redis.delete(f"session:{session_id}")
+
+    db: AsyncSession = request.state.db if hasattr(request.state, "db") else None
+
+
+@router.get("/me", response_model=UserResponse)
+async def get_me(current_user: User = Depends(get_current_active_user)):
+    return current_user

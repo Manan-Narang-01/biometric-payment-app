@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="app-shell">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon"><i class="bi bi-fingerprint"></i></div>
+      <span class="brand-name">BioPay</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="/" class="nav-item {% if request.path == '/' %}active{% endif %}">
+        <i class="bi bi-grid-1x2"></i><span>Dashboard</span>
+      </a>
+      <a href="/payment/send" class="nav-item {% if '/payment/send' in request.path %}active{% endif %}">
+        <i class="bi bi-arrow-up-right-circle"></i><span>Send</span>
+      </a>
+      <a href="/payment/receive" class="nav-item {% if '/payment/receive' in request.path %}active{% endif %}">
+        <i class="bi bi-arrow-down-left-circle"></i><span>Receive</span>
+      </a>
+      <a href="/profile" class="nav-item {% if '/profile' in request.path %}active{% endif %}">
+        <i class="bi bi-person-circle"></i><span>Profile</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="session-timer" id="sessionTimer">
+        <i class="bi bi-clock"></i>
+        <span id="timerDisplay">15:00</span>
+      </div>
+      <a href="/auth/logout" class="btn-logout">
+        <i class="bi bi-box-arrow-right"></i><span>Sign out</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="main-content">
+    <!-- Top bar -->
+    <header class="topbar">
+      <button class="btn-sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+        <i class="bi bi-list"></i>
+      </button>
+      <div class="topbar-right">
+        <div class="biometric-badge" id="biometricBadge">
+          <i class="bi bi-shield-fill-check"></i>
+          <span>Biometric Active</span>
+        </div>
+        <div class="user-chip">
+          <div class="avatar" id="userAvatar">{{ user.display_name[0].upper() if user else 'U' }}</div>
+          <span class="username">{{ user.display_name if user else 'User' }}</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="page-body">
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+</div>
+
+<!-- Session expiry toast -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+  <div id="sessionToast" class="toast align-items-center text-bg-warning" role="alert">
+    <div class="d-flex">
+      <div class="toast-body">
+        <i class="bi bi-clock me-2"></i>Session expiring in <strong id="toastTimer">2:00</strong>
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  window.BIOPAY_USER = {{ user | tojson | safe if user else '{}' }};
+</script>
+<script src="/static/js/session.js"></script>
+{% endblock %}

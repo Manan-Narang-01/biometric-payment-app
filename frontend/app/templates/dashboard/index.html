@@ -1,0 +1,124 @@
+{% extends "layout.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Dashboard</h1>
+    <p class="page-subtitle">Good to see you, <span id="greetName">{{ user.display_name if user else '' }}</span></p>
+  </div>
+</div>
+
+<!-- Balance Card Row -->
+<div class="row g-4 mb-4">
+  <div class="col-lg-5">
+    <div class="balance-card">
+      <div class="balance-card-header">
+        <span class="balance-label">Total Balance</span>
+        <div class="balance-badge"><i class="bi bi-shield-fill-check me-1"></i>Protected</div>
+      </div>
+      <div class="balance-amount" id="balanceAmount">
+        <span class="balance-currency">$</span>
+        <span id="balanceValue">—</span>
+      </div>
+      <div class="balance-wallet-address" id="walletAddress">
+        <i class="bi bi-wallet2 me-1"></i><span id="walletAddressText">loading...</span>
+      </div>
+      <div class="balance-actions">
+        <a href="/payment/send" class="btn-bp-primary btn-sm-bp">
+          <i class="bi bi-arrow-up-right-circle me-1"></i>Send
+        </a>
+        <a href="/payment/receive" class="btn-bp-outline btn-sm-bp">
+          <i class="bi bi-arrow-down-left-circle me-1"></i>Receive
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stat cards -->
+  <div class="col-lg-7">
+    <div class="row g-3 h-100">
+      <div class="col-6">
+        <div class="stat-card">
+          <div class="stat-icon stat-icon-sent"><i class="bi bi-arrow-up-right-circle"></i></div>
+          <div class="stat-label">Total Sent</div>
+          <div class="stat-value" id="totalSent">—</div>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="stat-card">
+          <div class="stat-icon stat-icon-received"><i class="bi bi-arrow-down-left-circle"></i></div>
+          <div class="stat-label">Total Received</div>
+          <div class="stat-value" id="totalReceived">—</div>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="stat-card">
+          <div class="stat-icon stat-icon-txn"><i class="bi bi-receipt"></i></div>
+          <div class="stat-label">Transactions</div>
+          <div class="stat-value" id="txnCount">—</div>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="stat-card">
+          <div class="stat-icon stat-icon-secure"><i class="bi bi-fingerprint"></i></div>
+          <div class="stat-label">Security Level</div>
+          <div class="stat-value text-bp-green">High</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row g-4 mb-4">
+  <div class="col-lg-8">
+    <div class="chart-card">
+      <div class="chart-card-header">
+        <h3 class="chart-title">Transaction History</h3>
+        <div class="chart-legend">
+          <span class="legend-item legend-sent">Sent</span>
+          <span class="legend-item legend-received">Received</span>
+        </div>
+      </div>
+      <canvas id="txnChart" height="90"></canvas>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="chart-card">
+      <div class="chart-card-header">
+        <h3 class="chart-title">By Type</h3>
+      </div>
+      <canvas id="typeChart" height="160"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Transactions -->
+<div class="card bp-card">
+  <div class="bp-card-header">
+    <h3 class="card-title-bp">Recent Transactions</h3>
+    <div class="d-flex gap-2">
+      <button class="btn-bp-ghost btn-sm-bp" id="refreshTxnBtn">
+        <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+      </button>
+    </div>
+  </div>
+  <div class="bp-card-body p-0">
+    <div id="txnLoading" class="txn-loading">
+      <div class="spinner-border text-bp-green"></div>
+    </div>
+    <div id="txnList" class="txn-list"></div>
+    <div id="txnEmpty" class="txn-empty d-none">
+      <i class="bi bi-inbox"></i>
+      <p>No transactions yet</p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="/static/js/dashboard.js"></script>
+{% endblock %}
