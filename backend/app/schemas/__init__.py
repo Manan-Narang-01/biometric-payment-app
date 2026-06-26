@@ -85,14 +85,14 @@ class WebAuthnCredentialResponse(BaseModel):
 
 class TokenResponse(BaseModel):
     access_token: str
-    refresh_token: str
+    refresh_token: Optional[str] = None  # returned only in the HttpOnly cookie, not the body
     token_type: str = "bearer"
     expires_in: int
     user: UserResponse
 
 
 class RefreshTokenRequest(BaseModel):
-    refresh_token: str
+    refresh_token: Optional[str] = None
 
 
 # ── Wallet Schemas ─────────────────────────────────────────

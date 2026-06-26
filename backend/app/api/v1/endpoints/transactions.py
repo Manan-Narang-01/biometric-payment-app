@@ -15,8 +15,7 @@ router = APIRouter()
 
 
 def get_ip(request: Request) -> str:
-    forwarded = request.headers.get("X-Forwarded-For")
-    return forwarded.split(",")[0].strip() if forwarded else (request.client.host if request.client else "unknown")
+    return request.client.host if request.client else "unknown"
 
 
 @router.post("/transfer", response_model=TransactionResponse)

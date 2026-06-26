@@ -1,7 +1,7 @@
 """WebAuthn/FIDO2 registration and authentication endpoints."""
 import uuid
 from datetime import datetime, timezone
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 import structlog
@@ -23,9 +23,6 @@ logger = structlog.get_logger()
 
 
 def get_client_ip(request: Request) -> str:
-    forwarded = request.headers.get("X-Forwarded-For")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
     return request.client.host if request.client else "unknown"
 
 
@@ -106,6 +103,7 @@ async def webauthn_login_begin(
 async def webauthn_login_complete(
     payload: WebAuthnLoginCompleteRequest,
     request: Request,
+    response: Response,
     db: AsyncSession = Depends(get_db),
 ):
     """Complete WebAuthn authentication and issue JWT tokens."""
@@ -165,9 +163,17 @@ async def webauthn_login_complete(
     ))
     await db.commit()
 
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        max_age=settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
+        path="/api/v1/auth",
+    )
     return TokenResponse(
         access_token=access_token,
-        refresh_token=refresh_token,
         expires_in=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         user=UserResponse.model_validate(user),
     )
