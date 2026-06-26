@@ -33,7 +33,7 @@ A full-stack payment application secured with **WebAuthn / FIDO2 biometric authe
 
 ### 1. Clone
 ```bash
-git clone https://github.com/YOUR_USERNAME/biopay.git
+git clone https://github.com/Manan-Narang-01/biopay.git
 cd biopay
 ```
 
