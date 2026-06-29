@@ -89,16 +89,7 @@ class WalletService:
         db: AsyncSession,
         ip_address: Optional[str] = None,
     ) -> Transaction:
-        # Load sender wallet
-        sender_wallet = await self.get_wallet(sender, db)
-        if not sender_wallet:
-            raise ValueError("Sender wallet not found")
-        if sender_wallet.is_frozen:
-            raise ValueError("Your wallet is frozen")
-        if sender_wallet.balance < amount:
-            raise ValueError("Insufficient balance")
-
-        # Load receiver
+        # ── Step 1: Validate receiver exists (no lock needed yet) ──
         result = await db.execute(
             select(User).where(User.username == receiver_username.lower(), User.is_active == True)
         )
@@ -108,16 +99,50 @@ class WalletService:
         if receiver.id == sender.id:
             raise ValueError("Cannot send money to yourself")
 
-        receiver_wallet = await self.get_wallet(receiver, db)
+        # ── Step 2: Determine lock ordering to prevent deadlocks ──
+        # Always lock wallets in a consistent order (by user_id) so that
+        # two concurrent transfers between the same pair of users cannot
+        # deadlock each other.
+        first_user_id, second_user_id = sorted([sender.id, receiver.id])
+
+        # ── Step 3: Acquire exclusive row locks (SELECT ... FOR UPDATE) ──
+        first_wallet_result = await db.execute(
+            select(Wallet).where(Wallet.user_id == first_user_id).with_for_update()
+        )
+        first_wallet = first_wallet_result.scalar_one_or_none()
+
+        second_wallet_result = await db.execute(
+            select(Wallet).where(Wallet.user_id == second_user_id).with_for_update()
+        )
+        second_wallet = second_wallet_result.scalar_one_or_none()
+
+        # Map back to sender/receiver after ordered locking
+        if sender.id == first_user_id:
+            sender_wallet, receiver_wallet = first_wallet, second_wallet
+        else:
+            sender_wallet, receiver_wallet = second_wallet, first_wallet
+
+        # ── Step 4: Validate balances AFTER locks are held ──
+        # This is the critical security fix: the balance check now runs
+        # while we hold an exclusive lock, so no concurrent request can
+        # read a stale balance and pass this check simultaneously.
+        if not sender_wallet:
+            raise ValueError("Sender wallet not found")
+        if sender_wallet.is_frozen:
+            raise ValueError("Your wallet is frozen")
         if not receiver_wallet:
             raise ValueError("Receiver wallet not found")
         if receiver_wallet.is_frozen:
             raise ValueError("Receiver wallet is frozen")
 
         fee = round(amount * Decimal("0.001"), 2)  # 0.1% fee
+        total_debit = amount + fee
 
-        # Atomic balance update
-        sender_wallet.balance -= (amount + fee)
+        if sender_wallet.balance < total_debit:
+            raise ValueError("Insufficient balance")
+
+        # ── Step 5: Atomic balance mutation (under lock) ──
+        sender_wallet.balance -= total_debit
         receiver_wallet.balance += amount
 
         tx = Transaction(

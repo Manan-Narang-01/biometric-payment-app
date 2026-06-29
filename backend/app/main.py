@@ -19,7 +19,7 @@ from app.core.middleware import SecurityHeadersMiddleware, SessionTimeoutMiddlew
 
 logger = structlog.get_logger()
 
-limiter = Limiter(key_func=get_remote_address)
+limiter = Limiter(key_func=get_remote_address, storage_uri=settings.REDIS_URL)
 
 
 @asynccontextmanager
