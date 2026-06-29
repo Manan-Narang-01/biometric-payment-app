@@ -7,7 +7,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 import structlog
 
@@ -19,7 +18,11 @@ from app.core.middleware import SecurityHeadersMiddleware, SessionTimeoutMiddlew
 
 logger = structlog.get_logger()
 
-limiter = Limiter(key_func=get_remote_address, storage_uri=settings.REDIS_URL)
+def _get_real_ip(request: Request) -> str:
+    """Use the direct peer address — never trust X-Forwarded-For for rate-limiting."""
+    return request.client.host if request.client else "unknown"
+
+limiter = Limiter(key_func=_get_real_ip, storage_uri=settings.REDIS_URL)
 
 
 @asynccontextmanager

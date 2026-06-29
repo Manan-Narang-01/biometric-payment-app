@@ -1,0 +1,1995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BioPay — Developer Guide</title>
+<style>
+  :root {
+    --bg:        #0d1117;
+    --surface:   #161b22;
+    --surface2:  #1f2937;
+    --border:    #30363d;
+    --green:     #00c896;
+    --green-dim: #00c89620;
+    --blue:      #4da6ff;
+    --yellow:    #f0c040;
+    --red:       #ff4d6d;
+    --purple:    #c678dd;
+    --text:      #e6edf3;
+    --muted:     #8b949e;
+    --code-bg:   #161b22;
+    --sidebar-w: 270px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: var(--sidebar-w);
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    overflow-y: auto;
+    padding: 24px 0;
+    z-index: 100;
+  }
+
+  .sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 20px 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: var(--green);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+  }
+
+  .logo-text { font-size: 18px; font-weight: 700; color: var(--text); }
+  .logo-sub  { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+  .nav-section {
+    padding: 6px 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-top: 12px;
+    margin-bottom: 4px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 20px;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 13.5px;
+    border-left: 3px solid transparent;
+    transition: all 0.15s;
+  }
+
+  .nav-item:hover { color: var(--text); background: var(--green-dim); }
+  .nav-item.active { color: var(--green); border-left-color: var(--green); background: var(--green-dim); }
+  .nav-item .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+  /* ── Main Content ── */
+  .main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    padding: 48px 56px;
+    max-width: 960px;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    background: linear-gradient(135deg, #0f2027, #1a2a1a, #0d1117);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 48px;
+    margin-bottom: 48px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, #00c89630, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--green-dim);
+    border: 1px solid #00c89640;
+    color: var(--green);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 99px;
+    margin-bottom: 16px;
+  }
+
+  .hero h1 {
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 12px;
+    background: linear-gradient(90deg, #fff, var(--green));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero p { color: var(--muted); font-size: 16px; max-width: 560px; }
+
+  .hero-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 24px;
+  }
+
+  .tag {
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid;
+  }
+
+  .tag-green  { background: #00c89615; color: var(--green);  border-color: #00c89640; }
+  .tag-blue   { background: #4da6ff15; color: var(--blue);   border-color: #4da6ff40; }
+  .tag-yellow { background: #f0c04015; color: var(--yellow); border-color: #f0c04040; }
+  .tag-red    { background: #ff4d6d15; color: var(--red);    border-color: #ff4d6d40; }
+  .tag-purple { background: #c678dd15; color: var(--purple); border-color: #c678dd40; }
+
+  /* ── Section ── */
+  .section { margin-bottom: 64px; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 28px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-icon {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .icon-green  { background: var(--green-dim);  border: 1px solid #00c89640; }
+  .icon-blue   { background: #4da6ff15;          border: 1px solid #4da6ff40; }
+  .icon-yellow { background: #f0c04015;          border: 1px solid #f0c04040; }
+  .icon-red    { background: #ff4d6d15;          border: 1px solid #ff4d6d40; }
+
+  .section-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .section-subtitle {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 28px 0 12px;
+  }
+
+  p { color: #c9d1d9; margin-bottom: 14px; }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+
+  .card-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card p { margin: 0; font-size: 13.5px; color: var(--muted); }
+
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+
+  /* ── Code blocks ── */
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    overflow-x: auto;
+    margin: 16px 0;
+    font-size: 13px;
+    line-height: 1.75;
+    position: relative;
+  }
+
+  pre .label {
+    position: absolute;
+    top: 10px; right: 14px;
+    font-size: 11px;
+    color: var(--muted);
+    font-family: sans-serif;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  code { font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; }
+  pre code { color: var(--text); }
+
+  .k  { color: #ff79c6; }   /* keyword   */
+  .s  { color: #f1fa8c; }   /* string    */
+  .c  { color: #6272a4; }   /* comment   */
+  .f  { color: #50fa7b; }   /* function  */
+  .n  { color: #8be9fd; }   /* variable  */
+  .p  { color: var(--text); } /* plain  */
+  .g  { color: var(--green); } /* green highlight */
+  .b  { color: var(--blue);  } /* blue highlight  */
+  .y  { color: var(--yellow);} /* yellow highlight*/
+  .r  { color: var(--red);   } /* red highlight   */
+
+  /* ── Flow diagram ── */
+  .flow {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 24px;
+    margin: 16px 0;
+  }
+
+  .flow-row {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin: 6px 0;
+  }
+
+  .flow-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .flow-box.green  { border-color: #00c89650; color: var(--green); }
+  .flow-box.blue   { border-color: #4da6ff50; color: var(--blue);  }
+  .flow-box.yellow { border-color: #f0c04050; color: var(--yellow);}
+  .flow-box.red    { border-color: #ff4d6d50; color: var(--red);   }
+  .flow-box.purple { border-color: #c678dd50; color: var(--purple);}
+
+  .flow-arrow {
+    color: var(--muted);
+    font-size: 18px;
+    padding: 0 8px;
+    flex-shrink: 0;
+  }
+
+  .flow-note {
+    font-size: 12px;
+    color: var(--muted);
+    margin-left: 12px;
+    font-style: italic;
+  }
+
+  .flow-down {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .flow-connector {
+    width: 2px;
+    height: 20px;
+    background: var(--border);
+    margin-left: 24px;
+  }
+
+  /* ── Breakpoint table ── */
+  .bp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    margin: 16px 0;
+  }
+
+  .bp-table th {
+    background: var(--surface2);
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 10px 16px;
+    text-align: left;
+    border-bottom: 2px solid var(--border);
+  }
+
+  .bp-table td {
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  .bp-table tr:hover td { background: var(--surface2); }
+
+  .bp-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px; height: 24px;
+    background: var(--green);
+    color: #000;
+    font-size: 11px;
+    font-weight: 800;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .bp-file {
+    font-family: monospace;
+    font-size: 12px;
+    color: var(--blue);
+    background: #4da6ff10;
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid #4da6ff30;
+    white-space: nowrap;
+  }
+
+  .bp-line {
+    font-family: monospace;
+    font-size: 12px;
+    color: var(--yellow);
+    font-weight: 700;
+  }
+
+  .check-list { list-style: none; padding: 0; }
+  .check-list li {
+    padding: 5px 0 5px 24px;
+    position: relative;
+    color: #c9d1d9;
+    font-size: 13.5px;
+  }
+
+  .check-list li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--green);
+    font-weight: 700;
+  }
+
+  /* ── Symptom table ── */
+  .symptom-grid {
+    display: grid;
+    gap: 10px;
+    margin: 16px 0;
+  }
+
+  .symptom-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .symptom-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 13px;
+  }
+
+  .symptom-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+
+  .symptom-box.symptom { border-left: 3px solid var(--red); }
+  .symptom-box.symptom .symptom-label { color: var(--red); }
+  .symptom-box.fix { border-left: 3px solid var(--green); }
+  .symptom-box.fix .symptom-label { color: var(--green); }
+
+  /* ── Layer badge ── */
+  .layer-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 3px 10px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+  }
+
+  .layer-1 { background: #ff79c620; color: #ff79c6; border: 1px solid #ff79c640; }
+  .layer-2 { background: #4da6ff20; color: var(--blue);   border: 1px solid #4da6ff40; }
+  .layer-3 { background: #f0c04020; color: var(--yellow); border: 1px solid #f0c04040; }
+  .layer-4 { background: #00c89620; color: var(--green);  border: 1px solid #00c89640; }
+
+  /* ── Callout ── */
+  .callout {
+    display: flex;
+    gap: 14px;
+    padding: 16px 20px;
+    border-radius: 10px;
+    margin: 20px 0;
+    font-size: 13.5px;
+  }
+
+  .callout-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+  .callout p { margin: 0; }
+  .callout strong { display: block; margin-bottom: 4px; }
+
+  .callout.info    { background: #4da6ff10; border: 1px solid #4da6ff30; }
+  .callout.warning { background: #f0c04010; border: 1px solid #f0c04030; }
+  .callout.danger  { background: #ff4d6d10; border: 1px solid #ff4d6d30; }
+  .callout.success { background: #00c89610; border: 1px solid #00c89630; }
+
+  .callout.info    p, .callout.info strong    { color: var(--blue);   }
+  .callout.warning p, .callout.warning strong { color: var(--yellow); }
+  .callout.danger  p, .callout.danger strong  { color: var(--red);    }
+  .callout.success p, .callout.success strong { color: var(--green);  }
+
+  /* ── Divider ── */
+  hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+
+  /* ── Footer ── */
+  .footer {
+    border-top: 1px solid var(--border);
+    padding: 28px 0 0;
+    margin-top: 60px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .footer-dot { color: var(--green); }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+  /* ── Active nav highlight on scroll ── */
+  .section { scroll-margin-top: 24px; }
+
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; padding: 24px 20px; }
+    .symptom-row { grid-template-columns: 1fr; }
+    .cards-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════ SIDEBAR ═══════════════════════ -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🖐</div>
+    <div>
+      <div class="logo-text">BioPay</div>
+      <div class="logo-sub">Developer Guide</div>
+    </div>
+  </div>
+
+  <div class="nav-section">Project Overview</div>
+  <a class="nav-item active" href="#what-is-biopay"><span class="dot"></span>What is BioPay?</a>
+  <a class="nav-item" href="#tech-stack"><span class="dot"></span>Tech Stack</a>
+  <a class="nav-item" href="#architecture"><span class="dot"></span>Architecture</a>
+  <a class="nav-item" href="#frontend-explained"><span class="dot"></span>Frontend — Flask</a>
+  <a class="nav-item" href="#backend-explained"><span class="dot"></span>Backend — FastAPI</a>
+  <a class="nav-item" href="#database-tables"><span class="dot"></span>Database Tables</a>
+  <a class="nav-item" href="#login-flow-simple"><span class="dot"></span>Login Flow</a>
+  <a class="nav-item" href="#payment-flow"><span class="dot"></span>Payment Flow</a>
+  <a class="nav-item" href="#security-highlights"><span class="dot"></span>Security</a>
+  <a class="nav-item" href="#code-navigation"><span class="dot"></span>Navigating the Code</a>
+
+  <div class="nav-section">Docker &amp; Database</div>
+  <a class="nav-item" href="#docker-overview"><span class="dot"></span>Overview</a>
+  <a class="nav-item" href="#containers"><span class="dot"></span>Containers &amp; Network</a>
+  <a class="nav-item" href="#startup-order"><span class="dot"></span>Startup Order</a>
+  <a class="nav-item" href="#db-creation"><span class="dot"></span>Table Creation</a>
+  <a class="nav-item" href="#sqlalchemy"><span class="dot"></span>SQLAlchemy ORM</a>
+  <a class="nav-item" href="#volumes"><span class="dot"></span>Data Persistence</a>
+  <a class="nav-item" href="#registration-e2e"><span class="dot"></span>Registration Flow</a>
+
+  <div class="nav-section">Debugging</div>
+  <a class="nav-item" href="#debug-overview"><span class="dot"></span>Debug Overview</a>
+  <a class="nav-item" href="#layer-js"><span class="dot"></span>Layer 1 — Browser JS</a>
+  <a class="nav-item" href="#layer-flask"><span class="dot"></span>Layer 2 — Flask</a>
+  <a class="nav-item" href="#layer-fastapi"><span class="dot"></span>Layer 3 — FastAPI</a>
+  <a class="nav-item" href="#layer-service"><span class="dot"></span>Layer 4 — Service</a>
+  <a class="nav-item" href="#symptom-guide"><span class="dot"></span>Symptom Guide</a>
+</nav>
+
+<!-- ═══════════════════════ MAIN ═══════════════════════ -->
+<main class="main">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-badge">📖 Developer Guide</div>
+    <h1>BioPay Technical Docs</h1>
+    <p>A plain-English guide to the BioPay platform — what it is, how the tech stack fits together, how data flows through Docker into PostgreSQL, and a step-by-step login debugging walkthrough with exact breakpoint locations.</p>
+    <div class="hero-tags">
+      <span class="tag tag-blue">FastAPI</span>
+      <span class="tag tag-green">Flask</span>
+      <span class="tag tag-yellow">PostgreSQL</span>
+      <span class="tag tag-red">Redis</span>
+      <span class="tag tag-purple">Docker</span>
+      <span class="tag tag-blue">SQLAlchemy</span>
+      <span class="tag tag-green">WebAuthn</span>
+    </div>
+  </div>
+
+
+  <!-- ═══ PART 0: PROJECT OVERVIEW ═══ -->
+
+  <!-- What is BioPay -->
+  <div class="section" id="what-is-biopay">
+    <div class="section-header">
+      <div class="section-icon icon-green">🖐</div>
+      <div>
+        <div class="section-title">What is BioPay?</div>
+        <div class="section-subtitle">A password-free payment platform powered by biometrics</div>
+      </div>
+    </div>
+
+    <p>BioPay is a <strong>digital payment platform</strong> where you log in and authorise payments using your <strong>fingerprint or face</strong> instead of a password. Think of it like Google Pay or Apple Pay — built from scratch.</p>
+
+    <div class="callout success">
+      <div class="callout-icon">💡</div>
+      <div><p><strong>Core idea in one sentence:</strong> Enter your username → your device scans your fingerprint/face → you're logged in and can send or receive money. No password is ever created, stored, or typed.</p></div>
+    </div>
+
+    <h3>The big picture flow</h3>
+    <div class="flow">
+      <div class="flow-down">
+        <div class="flow-row"><div class="flow-box blue">User visits site</div><div class="flow-note">types username only</div></div>
+        <div class="flow-connector"></div>
+        <div class="flow-row"><div class="flow-box yellow">Biometric prompt</div><div class="flow-note">fingerprint / Face ID / Windows Hello</div></div>
+        <div class="flow-connector"></div>
+        <div class="flow-row"><div class="flow-box green">Logged in</div><div class="flow-note">JWT token issued, session started</div></div>
+        <div class="flow-connector"></div>
+        <div class="flow-row"><div class="flow-box purple">Send / Receive money</div><div class="flow-note">wallet-to-wallet transfer, QR payments</div></div>
+      </div>
+    </div>
+
+    <h3>Why no password?</h3>
+    <p>BioPay uses a security standard called <strong>WebAuthn / FIDO2</strong> — the same standard used by Google, GitHub, and Apple for "passkeys". Your private key is stored on your device and <em>never leaves it</em>. The server only holds a public key, which is useless to an attacker even if stolen. The biometric (fingerprint/face data) never goes to the server at all — it only unlocks the key stored on your device.</p>
+
+    <div class="cards-grid">
+      <div class="card">
+        <div class="card-title">🚫 No passwords stored</div>
+        <p>Nothing to steal from the database. No password reset flows needed.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">🔒 Biometrics stay on device</div>
+        <p>Your fingerprint/face never leaves your phone or laptop. Ever.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">⚡ One-tap login</div>
+        <p>Just type username + touch sensor. Faster than any password flow.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">💸 Wallet payments</div>
+        <p>Send money by username, UPI ID, or QR code after biometric login.</p>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Tech Stack -->
+  <div class="section" id="tech-stack">
+    <div class="section-header">
+      <div class="section-icon icon-blue">⚙️</div>
+      <div>
+        <div class="section-title">Tech Stack</div>
+        <div class="section-subtitle">Every tool used and exactly why it was chosen</div>
+      </div>
+    </div>
+
+    <p>The project has <strong>two separate Python apps</strong> that talk to each other, plus a database, a cache, and a traffic router. Here's every layer explained simply:</p>
+
+    <table class="bp-table">
+      <thead>
+        <tr>
+          <th>Layer</th>
+          <th>Tool</th>
+          <th>What it does in BioPay</th>
+          <th>Why this tool?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="tag tag-purple">Traffic</span></td>
+          <td><strong>Nginx</strong></td>
+          <td>Routes requests from browser to the right app, handles HTTPS/SSL</td>
+          <td>The only container exposed to the internet. Protects everything behind it.</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-green">Frontend</span></td>
+          <td><strong>Flask (Python)</strong></td>
+          <td>Serves HTML pages + acts as a proxy between browser JS and backend API</td>
+          <td>Lightweight web framework. Manages the login session cookie.</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-blue">Backend</span></td>
+          <td><strong>FastAPI (Python)</strong></td>
+          <td>All business logic — user accounts, biometric verification, payments</td>
+          <td>Fast, async, auto-generates API docs, built-in validation via Pydantic.</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-yellow">Database</span></td>
+          <td><strong>PostgreSQL</strong></td>
+          <td>Permanently stores users, wallets, transactions, credentials, logs</td>
+          <td>Reliable, ACID-compliant. Supports JSONB for flexible fields.</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-red">Cache</span></td>
+          <td><strong>Redis</strong></td>
+          <td>Stores temporary WebAuthn challenges (5 min) and session IDs</td>
+          <td>In-memory = extremely fast. Built-in key expiry is perfect for challenges.</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-purple">ORM</span></td>
+          <td><strong>SQLAlchemy</strong></td>
+          <td>Translates Python objects into SQL queries automatically</td>
+          <td>No raw SQL needed. Handles connection pooling and transactions.</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-blue">Validation</span></td>
+          <td><strong>Pydantic</strong></td>
+          <td>Validates every API request and response — rejects bad data at the door</td>
+          <td>Integrated with FastAPI. Gives clear error messages automatically.</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-green">Biometrics</span></td>
+          <td><strong>py_webauthn</strong></td>
+          <td>Generates challenges and verifies biometric signatures on the backend</td>
+          <td>Official Python implementation of the FIDO2/WebAuthn spec.</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-yellow">Auth tokens</span></td>
+          <td><strong>JWT (PyJWT)</strong></td>
+          <td>Issues short-lived access tokens (15 min) after successful biometric login</td>
+          <td>Stateless — backend can verify without a DB lookup on every request.</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-purple">Containers</span></td>
+          <td><strong>Docker + Compose</strong></td>
+          <td>Runs all services together in isolated containers with one command</td>
+          <td><code>docker compose up</code> spins up the entire app on any machine.</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-blue">DB migrations</span></td>
+          <td><strong>Alembic</strong></td>
+          <td>Creates and updates database tables in a versioned, trackable way</td>
+          <td>Like git for your database schema. Easy to roll back changes.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+
+  <!-- Architecture -->
+  <div class="section" id="architecture">
+    <div class="section-header">
+      <div class="section-icon icon-yellow">🏗</div>
+      <div>
+        <div class="section-title">Architecture — How Everything Connects</div>
+        <div class="section-subtitle">Two separate Python apps, wired together through Docker</div>
+      </div>
+    </div>
+
+    <p>The project intentionally separates the <strong>UI layer</strong> (Flask) from the <strong>logic layer</strong> (FastAPI). The browser never talks to FastAPI directly — Flask sits in the middle and also manages your login session.</p>
+
+    <div class="flow" style="margin-bottom:24px">
+      <div class="flow-down">
+        <div class="flow-row">
+          <div class="flow-box blue">🌐 Your Browser</div>
+          <div class="flow-note">HTML + CSS + JS (Bootstrap, vanilla JS)</div>
+        </div>
+        <div class="flow-connector"></div>
+        <div class="flow-row">
+          <div class="flow-box yellow">⚡ Nginx — Port 443 (HTTPS)</div>
+          <div class="flow-note">Terminates SSL, routes to Flask or directly to FastAPI</div>
+        </div>
+        <div class="flow-connector"></div>
+        <div class="flow-row" style="gap:20px">
+          <div class="flow-box green">🐍 Flask Frontend<br><small style="font-weight:400;color:var(--muted)">Serves HTML pages<br>Manages session cookie<br>Proxies API calls</small></div>
+          <div class="flow-arrow" style="align-self:center">→</div>
+          <div class="flow-box blue">⚡ FastAPI Backend<br><small style="font-weight:400;color:var(--muted)">REST API<br>Business logic<br>WebAuthn + JWT</small></div>
+        </div>
+        <div class="flow-connector" style="margin-left:340px"></div>
+        <div class="flow-row" style="margin-left:240px; gap:20px">
+          <div class="flow-box yellow">🐘 PostgreSQL<br><small style="font-weight:400;color:var(--muted)">Permanent data</small></div>
+          <div class="flow-box red" style="margin-left:10px">⚡ Redis<br><small style="font-weight:400;color:var(--muted)">Temp data</small></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout info">
+      <div class="callout-icon">🔑</div>
+      <div><p><strong>Why two Python apps?</strong> Flask handles the "face" of the app — rendering pages, managing cookies. FastAPI handles the "brain" — pure business logic with no HTML. This separation means the API could power a mobile app in the future without changing any backend code.</p></div>
+    </div>
+
+    <h3>Project folder structure</h3>
+    <pre><code>biopay/
+├── <span class="g">frontend/</span>                    <span class="c">← Flask app (serves pages)</span>
+│   └── app/
+│       ├── blueprints/          <span class="c">← Routes: auth.py, payment.py</span>
+│       ├── templates/           <span class="c">← HTML: login.html, dashboard/index.html</span>
+│       └── static/
+│           ├── css/biopay.css   <span class="c">← All styling</span>
+│           └── js/
+│               ├── biopay.js    <span class="c">← Shared utils (fetch, toast, format)</span>
+│               ├── webauthn.js  <span class="c">← Biometric API helper</span>
+│               ├── login.js     <span class="c">← Login button logic</span>
+│               └── register.js  <span class="c">← Registration logic</span>
+│
+├── <span class="b">backend/</span>                     <span class="c">← FastAPI app (business logic)</span>
+│   └── app/
+│       ├── models/              <span class="c">← Database table definitions</span>
+│       ├── schemas/             <span class="c">← Request/response shapes (Pydantic)</span>
+│       ├── services/            <span class="c">← Core logic: webauthn_service.py, wallet_service.py</span>
+│       ├── api/v1/endpoints/    <span class="c">← Route handlers: webauthn.py, wallet.py</span>
+│       └── core/                <span class="c">← Config, DB, Redis, security, middleware</span>
+│
+├── <span class="y">docker-compose.yml</span>           <span class="c">← Starts everything together</span>
+├── <span class="y">scripts/init.sql</span>             <span class="c">← PostgreSQL extensions setup</span>
+└── <span class="y">nginx/nginx.conf</span>             <span class="c">← Traffic routing rules</span></code><div class="label">project structure</div></pre>
+  </div>
+
+
+  <!-- Frontend Explained -->
+  <div class="section" id="frontend-explained">
+    <div class="section-header">
+      <div class="section-icon icon-green">🐍</div>
+      <div>
+        <div class="section-title">Frontend — Flask App</div>
+        <div class="section-subtitle">Serves HTML pages and acts as a secure middle-man to the API</div>
+      </div>
+    </div>
+
+    <p>The Flask frontend does <strong>two things only</strong>: render HTML templates and forward browser requests to FastAPI. It never runs business logic itself.</p>
+
+    <h3>Why Flask sits in the middle (proxy pattern)</h3>
+    <pre><code><span class="c"># Browser JS calls Flask, not FastAPI directly:</span>
+
+Browser JS
+  calls → <span class="g">/auth/api/webauthn/login/begin</span>          <span class="c">(Flask route)</span>
+    Flask forwards → <span class="b">/api/v1/auth/webauthn/login/begin</span>  <span class="c">(FastAPI)</span>
+    FastAPI responds → Flask passes it back → browser
+
+<span class="c"># Why? Flask adds the session cookie that keeps you logged in.
+# The browser never knows FastAPI exists.</span></code><div class="label">blueprints/auth.py</div></pre>
+
+    <h3>Key JavaScript files</h3>
+    <div class="cards-grid">
+      <div class="card">
+        <div class="card-title">📄 biopay.js</div>
+        <p>Shared utilities used on every page — <code>BioPay.post()</code> fetch wrapper, toast notifications, currency/date formatting.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">🔑 webauthn.js</div>
+        <p>Handles all base64 encoding/decoding and calls the browser's built-in biometric API (<code>navigator.credentials.get()</code>).</p>
+      </div>
+      <div class="card">
+        <div class="card-title">🖱 login.js</div>
+        <p>Wires up the login button — calls login/begin, triggers biometric, calls login/complete, redirects to dashboard.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">📝 register.js</div>
+        <p>Wires up registration — creates user account, then immediately triggers biometric registration to store the public key.</p>
+      </div>
+    </div>
+
+    <h3>How a page is rendered</h3>
+    <pre><code><span class="c"># blueprints/auth.py</span>
+<span class="k">@auth_bp.route</span>(<span class="s">"/login"</span>, methods=[<span class="s">"GET"</span>])
+<span class="k">def</span> <span class="f">login</span>():
+    <span class="k">if</span> session.<span class="f">get</span>(<span class="s">"access_token"</span>):     <span class="c"># already logged in?</span>
+        <span class="k">return</span> <span class="f">redirect</span>(url_for(<span class="s">"dashboard.index"</span>))
+    <span class="k">return</span> <span class="f">render_template</span>(<span class="s">"auth/login.html"</span>)
+    <span class="c"># Flask fills in the Jinja2 template and sends back HTML</span></code><div class="label">blueprints/auth.py</div></pre>
+  </div>
+
+
+  <!-- Backend Explained -->
+  <div class="section" id="backend-explained">
+    <div class="section-header">
+      <div class="section-icon icon-blue">⚡</div>
+      <div>
+        <div class="section-title">Backend — FastAPI App</div>
+        <div class="section-subtitle">The brain — handles all real logic, talks to Postgres and Redis</div>
+      </div>
+    </div>
+
+    <p>FastAPI is a modern Python web framework. It exposes a REST API at <code>/api/v1/...</code> and handles everything real: verifying biometrics, managing wallets, recording transactions.</p>
+
+    <h3>How a request travels through the backend</h3>
+    <div class="flow">
+      <div class="flow-down">
+        <div class="flow-row"><div class="flow-box blue">HTTP request arrives</div></div>
+        <div class="flow-connector"></div>
+        <div class="flow-row"><div class="flow-box green">Pydantic schema validates input</div><div class="flow-note">Rejects bad data before touching the DB</div></div>
+        <div class="flow-connector"></div>
+        <div class="flow-row"><div class="flow-box yellow">Route handler runs</div><div class="flow-note">api/v1/endpoints/webauthn.py etc.</div></div>
+        <div class="flow-connector"></div>
+        <div class="flow-row"><div class="flow-box blue">Calls service layer</div><div class="flow-note">services/webauthn_service.py — real logic here</div></div>
+        <div class="flow-connector"></div>
+        <div class="flow-row" style="gap:12px">
+          <div class="flow-box yellow">Queries PostgreSQL</div>
+          <div class="flow-box red">Reads/writes Redis</div>
+        </div>
+        <div class="flow-connector"></div>
+        <div class="flow-row"><div class="flow-box green">Pydantic formats response</div><div class="flow-note">Shapes the JSON sent back</div></div>
+      </div>
+    </div>
+
+    <h3>Key backend files</h3>
+    <pre><code>api/v1/endpoints/
+  <span class="g">webauthn.py</span>     <span class="c">← login/begin, login/complete, register biometric</span>
+  <span class="g">auth.py</span>         <span class="c">← register user, logout, refresh token</span>
+  <span class="g">wallet.py</span>       <span class="c">← get balance, fund wallet</span>
+  <span class="g">transactions.py</span> <span class="c">← transfer, QR payment, history</span>
+  <span class="g">security.py</span>     <span class="c">← security logs, trusted devices</span>
+
+services/
+  <span class="b">webauthn_service.py</span>  <span class="c">← generates challenges, verifies biometric signatures</span>
+  <span class="b">wallet_service.py</span>    <span class="c">← balance checks, atomic money transfers</span>
+
+core/
+  <span class="y">config.py</span>      <span class="c">← all settings from .env file</span>
+  <span class="y">database.py</span>    <span class="c">← SQLAlchemy engine + session factory</span>
+  <span class="y">redis_client.py</span> <span class="c">← Redis connection</span>
+  <span class="y">security.py</span>    <span class="c">← JWT creation + verification</span>
+  <span class="y">middleware.py</span>  <span class="c">← security headers, session timeout</span></code><div class="label">backend/app/</div></pre>
+  </div>
+
+
+  <!-- Database Tables -->
+  <div class="section" id="database-tables">
+    <div class="section-header">
+      <div class="section-icon icon-yellow">🗄</div>
+      <div>
+        <div class="section-title">What's Stored in the Database</div>
+        <div class="section-subtitle">Every table and what it holds</div>
+      </div>
+    </div>
+
+    <p>All data is stored in PostgreSQL. Every row gets a <strong>UUID</strong> as its ID (a random unique string like <code>550e8400-e29b-41d4-a716-446655440000</code>) — much harder to guess than simple 1, 2, 3 numbers.</p>
+
+    <div class="cards-grid">
+      <div class="card">
+        <div class="card-title">👤 users</div>
+        <p>Username, email, display name, avatar colour, whether they're verified. One row per person. <strong>No password column.</strong></p>
+      </div>
+      <div class="card">
+        <div class="card-title">💰 wallets</div>
+        <p>Balance, currency, wallet address. Exactly one wallet per user. Created automatically at registration.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">🔑 webauthn_credentials</div>
+        <p>The <em>public key</em> from your biometric device. Never the private key or your fingerprint — those stay on device.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">💸 transactions</div>
+        <p>Every send/receive — amount, sender wallet, receiver wallet, status (pending/completed/failed), timestamp.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">📱 trusted_devices</div>
+        <p>Devices that have logged in before. Stores a browser fingerprint hash, device name, IP, last seen.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">🛡 security_logs</div>
+        <p>Audit trail — every login success, failure, biometric registration, transfer. Useful for fraud detection.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">🏦 bank_accounts</div>
+        <p>Linked bank account info — account number, IFSC, bank name. Used for withdraw/deposit flows.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">📋 audit_logs</div>
+        <p>General purpose activity log — what action, on what resource, by whom, what changed.</p>
+      </div>
+    </div>
+
+    <div class="callout info">
+      <div class="callout-icon">🔗</div>
+      <div><p><strong>Foreign keys:</strong> Every non-user table has a <code>user_id</code> column that links back to the <code>users</code> table. Delete a user and all their data cascades — wallets, credentials, logs all go too (<code>ondelete="CASCADE"</code>).</p></div>
+    </div>
+  </div>
+
+
+  <!-- Login Flow Simple -->
+  <div class="section" id="login-flow-simple">
+    <div class="section-header">
+      <div class="section-icon icon-green">🔐</div>
+      <div>
+        <div class="section-title">Login Flow — Step by Step</div>
+        <div class="section-subtitle">What happens between clicking "Sign in" and reaching the dashboard</div>
+      </div>
+    </div>
+
+    <div class="flow">
+      <div class="flow-down">
+        <div class="flow-row"><div class="flow-box blue">1. Type username → click "Sign in with biometric"</div></div>
+        <div class="flow-connector"></div>
+        <div class="flow-row">
+          <div class="flow-box green">2. Browser → Flask → FastAPI: "Start login for alice"</div>
+        </div>
+        <div class="flow-row" style="margin-left:20px;margin-top:4px">
+          <div class="flow-note" style="margin:0">FastAPI looks up alice in DB → generates a random 32-byte challenge → stores in Redis for 5 minutes → sends to browser</div>
+        </div>
+        <div class="flow-connector"></div>
+        <div class="flow-row"><div class="flow-box yellow">3. Browser asks OS: "Verify the user for this challenge"</div></div>
+        <div class="flow-row" style="margin-left:20px;margin-top:4px">
+          <div class="flow-note" style="margin:0">Windows Hello / Face ID / Touch ID prompts → user touches sensor → device signs the challenge with its private key</div>
+        </div>
+        <div class="flow-connector"></div>
+        <div class="flow-row"><div class="flow-box green">4. Browser → Flask → FastAPI: "Here's the signed credential"</div></div>
+        <div class="flow-row" style="margin-left:20px;margin-top:4px">
+          <div class="flow-note" style="margin:0">FastAPI retrieves challenge from Redis → verifies signature using alice's stored public key → issues JWT access token</div>
+        </div>
+        <div class="flow-connector"></div>
+        <div class="flow-row"><div class="flow-box purple">5. Flask stores JWT in session cookie → browser redirects to dashboard</div></div>
+      </div>
+    </div>
+
+    <div class="callout success">
+      <div class="callout-icon">🛡</div>
+      <div><p><strong>Why this is secure:</strong> The challenge is random and single-use — a replay attack is impossible. The private key signs the challenge but never leaves the device. The public key on the server can verify the signature but cannot be used to impersonate the user.</p></div>
+    </div>
+
+    <h3>Redis's role in login</h3>
+    <pre><code><span class="c"># begin_authentication stores the challenge temporarily</span>
+<span class="k">await</span> redis.<span class="f">setex</span>(
+    <span class="s">f"webauthn:auth:{user.id}"</span>,
+    <span class="g">300</span>,            <span class="c"># ← expires in 5 minutes</span>
+    challenge_b64   <span class="c"># ← the random challenge bytes</span>
+)
+
+<span class="c"># complete_authentication retrieves and then DELETES it</span>
+challenge_b64 = <span class="k">await</span> redis.<span class="f">get</span>(<span class="s">f"webauthn:auth:{user.id}"</span>)
+<span class="k">await</span> redis.<span class="f">delete</span>(<span class="s">f"webauthn:auth:{user.id}"</span>)  <span class="c"># ← single-use</span></code><div class="label">services/webauthn_service.py</div></pre>
+  </div>
+
+
+  <!-- Payment Flow -->
+  <div class="section" id="payment-flow">
+    <div class="section-header">
+      <div class="section-icon icon-blue">💸</div>
+      <div>
+        <div class="section-title">Payment Flow</div>
+        <div class="section-subtitle">How money moves between wallets</div>
+      </div>
+    </div>
+
+    <h3>Sending money by username</h3>
+    <div class="flow">
+      <div class="flow-down">
+        <div class="flow-row"><div class="flow-box blue">Dashboard → enter recipient username + amount → Send</div></div>
+        <div class="flow-connector"></div>
+        <div class="flow-row"><div class="flow-box green">POST /api/v1/transactions/transfer</div></div>
+        <div class="flow-connector"></div>
+        <div class="flow-row"><div class="flow-box yellow">wallet_service checks: does sender have enough balance?</div></div>
+        <div class="flow-connector"></div>
+        <div class="flow-row"><div class="flow-box green">Atomic DB transaction:</div></div>
+        <div class="flow-row" style="margin-left:20px;margin-top:4px">
+          <div class="flow-note" style="margin:0">sender.balance -= amount · receiver.balance += amount · INSERT INTO transactions · Either BOTH happen or NEITHER</div>
+        </div>
+        <div class="flow-connector"></div>
+        <div class="flow-row"><div class="flow-box purple">Transaction record saved → response sent to browser</div></div>
+      </div>
+    </div>
+
+    <h3>QR code payments</h3>
+    <pre><code><span class="c"># Payee generates a QR code with their wallet address</span>
+GET /api/v1/transactions/qr/generate
+→ returns QR data string encoding wallet_address + optional amount
+
+<span class="c"># Payer scans the QR, fills in amount if needed, confirms</span>
+POST /api/v1/transactions/qr/pay
+  { qr_data: "...", amount: 50.00 }
+→ same wallet transfer logic as above</code><div class="label">api/v1/endpoints/transactions.py</div></pre>
+
+    <div class="callout warning">
+      <div class="callout-icon">⚠️</div>
+      <div><p><strong>Atomic transactions:</strong> The debit from sender and credit to receiver happen in a single database transaction. If anything fails halfway — power cut, crash, network error — PostgreSQL rolls back the entire operation. Money is never created or destroyed accidentally.</p></div>
+    </div>
+  </div>
+
+
+  <!-- Security -->
+  <div class="section" id="security-highlights">
+    <div class="section-header">
+      <div class="section-icon icon-red">🛡</div>
+      <div>
+        <div class="section-title">Security Highlights</div>
+        <div class="section-subtitle">How BioPay protects users and their money</div>
+      </div>
+    </div>
+
+    <div class="cards-grid">
+      <div class="card">
+        <div class="card-title">🔑 No passwords stored</div>
+        <p>Nothing to steal from the database. No <code>passwords</code> column exists anywhere in the schema.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">🖐 Private key never leaves device</div>
+        <p>Your biometric unlocks a key stored in your device's secure enclave. It never touches the network.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">⏱ JWT expires in 15 min</div>
+        <p>Access tokens are short-lived. Even a stolen token becomes useless quickly.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">🎲 Single-use challenges</div>
+        <p>Each login challenge is deleted from Redis immediately after use. Replay attacks are impossible.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">🚦 Rate limiting</div>
+        <p>API endpoints are rate-limited (100 requests / 60 seconds). Brute-force attacks are blocked.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">📋 Full audit trail</div>
+        <p>Every login, failure, biometric event, and transfer is logged in <code>security_logs</code>.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">🌐 HTTPS enforced</div>
+        <p>Nginx handles SSL termination. The browser enforces HTTPS for WebAuthn to work at all.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">🔒 Session timeout</div>
+        <p>Sessions in Redis expire after 15 minutes of inactivity, enforced by <code>SessionTimeoutMiddleware</code>.</p>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Code Navigation -->
+  <div class="section" id="code-navigation">
+    <div class="section-header">
+      <div class="section-icon icon-green">🗺</div>
+      <div>
+        <div class="section-title">How to Navigate the Code</div>
+        <div class="section-subtitle">A mental map for tracing any feature from click to database</div>
+      </div>
+    </div>
+
+    <p>Every feature follows the same path through the codebase. Once you learn this pattern once, you can trace anything.</p>
+
+    <div class="flow" style="margin-bottom:20px">
+      <div class="flow-down">
+        <div class="flow-row">
+          <div class="flow-box" style="border-color:#ff79c650;color:#ff79c6">HTML template<br><small style="font-weight:400;color:var(--muted)">templates/</small></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-box green">JS file<br><small style="font-weight:400;color:var(--muted)">static/js/</small></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-box blue">Flask blueprint<br><small style="font-weight:400;color:var(--muted)">blueprints/</small></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-box yellow">FastAPI endpoint<br><small style="font-weight:400;color:var(--muted)">api/v1/endpoints/</small></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-box purple">Service<br><small style="font-weight:400;color:var(--muted)">services/</small></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-box red">Model<br><small style="font-weight:400;color:var(--muted)">models/</small></div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Example — tracing the login button</h3>
+    <pre><code><span class="g">login.html</span>          <span class="c">← the page with the button</span>
+  ↓
+<span class="g">login.js</span>            <span class="c">← handles button click, calls API</span>
+  ↓
+<span class="b">blueprints/auth.py</span>  <span class="c">← Flask proxy routes /auth/api/webauthn/...</span>
+  ↓
+<span class="y">endpoints/webauthn.py</span> <span class="c">← FastAPI route, validates payload</span>
+  ↓
+<span class="y">services/webauthn_service.py</span> <span class="c">← generates challenge, verifies signature</span>
+  ↓
+<span class="r">models/__init__.py</span>  <span class="c">← User, WebAuthnCredential table definitions</span></code><div class="label">login button trace</div></pre>
+
+    <h3>Example — tracing a money transfer</h3>
+    <pre><code><span class="g">dashboard/index.html</span>    <span class="c">← send money form</span>
+  ↓
+<span class="g">dashboard.js</span>            <span class="c">← calls POST /api/v1/transactions/transfer</span>
+  ↓
+<span class="b">blueprints/payment.py</span>   <span class="c">← Flask proxy</span>
+  ↓
+<span class="y">endpoints/transactions.py</span> <span class="c">← validates amount, recipient</span>
+  ↓
+<span class="y">services/wallet_service.py</span> <span class="c">← balance check, atomic debit/credit</span>
+  ↓
+<span class="r">models/__init__.py</span>      <span class="c">← Wallet, Transaction table definitions</span></code><div class="label">transfer trace</div></pre>
+  </div>
+
+  <hr>
+
+  <!-- ═══ PART 1: DOCKER & DB ═══ -->
+  <div class="section" id="docker-overview">
+    <div class="section-header">
+      <div class="section-icon icon-green">🐳</div>
+      <div>
+        <div class="section-title">How Data is Stored in the DB Through Docker</div>
+        <div class="section-subtitle">From a user clicking a button to a row saved in PostgreSQL</div>
+      </div>
+    </div>
+
+    <p>Think of Docker like a set of <strong>isolated shipping containers</strong>. Each service (Postgres, Redis, backend, frontend, nginx) runs in its own container. <code>docker-compose.yml</code> is the instruction file that starts all containers and wires them together.</p>
+
+    <div class="callout info">
+      <div class="callout-icon">💡</div>
+      <div><p><strong>Key idea:</strong> Containers talk to each other using <em>service names</em> as hostnames, not <code>localhost</code>. The backend connects to Postgres at <code>postgres:5432</code>, not <code>localhost:5432</code> — Docker resolves the name automatically.</p></div>
+    </div>
+  </div>
+
+
+  <!-- Containers & Network -->
+  <div class="section" id="containers">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🔗</div>
+      <div>
+        <div class="section-title">Containers &amp; Internal Network</div>
+        <div class="section-subtitle">All 5 containers live on one private Docker network</div>
+      </div>
+    </div>
+
+    <p>All containers are connected via a <strong>bridge network</strong> called <code>biopay_network</code>. Traffic from your browser enters through Nginx on port 443 (HTTPS), and everything else happens inside this private network — completely isolated from the outside world.</p>
+
+    <div class="flow">
+      <div class="flow-down">
+
+        <div class="flow-row">
+          <div class="flow-box blue">🌐 Your Browser</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-box">https://localhost (port 443)</div>
+        </div>
+        <div class="flow-connector"></div>
+
+        <div class="flow-row">
+          <div class="flow-box yellow">⚡ Nginx</div>
+          <div class="flow-note">biopay_nginx · Routes traffic + SSL termination</div>
+        </div>
+        <div class="flow-connector"></div>
+
+        <div class="flow-row" style="gap:20px">
+          <div class="flow-box green">🐍 Frontend (Flask)</div>
+          <div class="flow-arrow" style="color:var(--border)">|</div>
+          <div class="flow-box blue">⚡ Backend (FastAPI)</div>
+          <div class="flow-note">Internal HTTP — http://backend:8000</div>
+        </div>
+        <div class="flow-connector"></div>
+
+        <div class="flow-row" style="gap:20px">
+          <div class="flow-box yellow">🐘 PostgreSQL</div>
+          <div class="flow-arrow" style="color:var(--border)">|</div>
+          <div class="flow-box red">⚡ Redis</div>
+          <div class="flow-note">Internal — postgres:5432 / redis:6379</div>
+        </div>
+
+      </div>
+    </div>
+
+    <h3>Why service names instead of localhost?</h3>
+    <p>Each container is a separate machine on the Docker network. <code>localhost</code> inside the backend container means <em>the backend itself</em>, not Postgres. Docker's internal DNS maps service names to the correct container's IP automatically.</p>
+
+    <pre><code><span class="c"># docker-compose.yml — backend environment</span>
+<span class="n">DATABASE_URL</span><span class="p">=postgresql+asyncpg://biopay:secret<span class="g">@postgres</span>:5432/biopay_db</span>
+<span class="n">REDIS_URL</span><span class="p">   =redis://:secret<span class="g">@redis</span>:6379/0</span>
+<span class="c">#                                  ↑ service name, not localhost</span></code><div class="label">docker-compose.yml</div></pre>
+
+    <div class="cards-grid">
+      <div class="card">
+        <div class="card-title"><span>🐘</span> biopay_postgres</div>
+        <p>PostgreSQL 16. Stores all permanent data. Exposes port 5432 <em>only on the internal network</em>.</p>
+      </div>
+      <div class="card">
+        <div class="card-title"><span>⚡</span> biopay_redis</div>
+        <p>Redis 7 with AOF persistence. Stores temporary challenges and session tokens. Internal port 6379.</p>
+      </div>
+      <div class="card">
+        <div class="card-title"><span>🔧</span> biopay_backend</div>
+        <p>FastAPI app. Handles all business logic. Connects to both Postgres and Redis. Internal port 8000.</p>
+      </div>
+      <div class="card">
+        <div class="card-title"><span>🎨</span> biopay_frontend</div>
+        <p>Flask app. Serves HTML pages and proxies API calls to the backend. Internal port 5000.</p>
+      </div>
+      <div class="card">
+        <div class="card-title"><span>🌐</span> biopay_nginx</div>
+        <p>Reverse proxy. The only container exposed to the outside world on ports 80 and 443.</p>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Startup Order -->
+  <div class="section" id="startup-order">
+    <div class="section-header">
+      <div class="section-icon icon-yellow">⏱</div>
+      <div>
+        <div class="section-title">Startup Order</div>
+        <div class="section-subtitle">Containers boot in dependency order with health checks</div>
+      </div>
+    </div>
+
+    <p>Docker Compose uses <code>depends_on</code> with <code>condition: service_healthy</code> to guarantee each service is truly ready before the next one starts — not just started, but actually responding to health checks.</p>
+
+    <div class="flow">
+      <div class="flow-down">
+        <div class="flow-row">
+          <div class="flow-box yellow">1. postgres + redis</div>
+          <div class="flow-note">Start in parallel — no dependencies</div>
+        </div>
+        <div class="flow-connector"></div>
+        <div class="flow-row">
+          <div class="flow-box green">Healthcheck</div>
+          <div class="flow-note">pg_isready &amp; redis-cli ping — must pass before next step</div>
+        </div>
+        <div class="flow-connector"></div>
+        <div class="flow-row">
+          <div class="flow-box blue">2. backend</div>
+          <div class="flow-note">Waits for postgres + redis to be healthy</div>
+        </div>
+        <div class="flow-connector"></div>
+        <div class="flow-row">
+          <div class="flow-box green">Healthcheck</div>
+          <div class="flow-note">curl http://localhost:8000/health</div>
+        </div>
+        <div class="flow-connector"></div>
+        <div class="flow-row">
+          <div class="flow-box purple">3. frontend</div>
+          <div class="flow-note">Waits for backend to be healthy</div>
+        </div>
+        <div class="flow-connector"></div>
+        <div class="flow-row">
+          <div class="flow-box red">4. nginx</div>
+          <div class="flow-note">Waits for frontend + backend — then opens ports 80 &amp; 443 to the world</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout warning">
+      <div class="callout-icon">⚠️</div>
+      <div><p><strong>Without healthchecks</strong>, the backend might start before Postgres is ready and crash immediately with a connection error. The <code>condition: service_healthy</code> setting prevents this.</p></div>
+    </div>
+  </div>
+
+
+  <!-- DB Table Creation -->
+  <div class="section" id="db-creation">
+    <div class="section-header">
+      <div class="section-icon icon-green">🗄️</div>
+      <div>
+        <div class="section-title">How Database Tables Are Created</div>
+        <div class="section-subtitle">Two separate steps — init.sql then Alembic migrations</div>
+      </div>
+    </div>
+
+    <p>Table creation happens in <strong>two phases</strong> when you first run the project. After that, Postgres and Alembic remember what's already been done and skip it.</p>
+
+    <h3>Phase 1 — <code>init.sql</code> (runs inside Postgres on first boot)</h3>
+    <p>PostgreSQL has a special folder: anything placed at <code>/docker-entrypoint-initdb.d/</code> inside the container is auto-run the very first time the database starts. The <code>docker-compose.yml</code> mounts our script there:</p>
+
+    <pre><code><span class="c"># docker-compose.yml</span>
+<span class="n">volumes</span><span class="p">:</span>
+  <span class="p">- ./scripts/init.sql:/docker-entrypoint-initdb.d/<span class="g">init.sql</span></span>
+  <span class="c">#                   ↑ mapped into postgres's auto-run folder</span></code><div class="label">docker-compose.yml</div></pre>
+
+    <pre><code><span class="c">-- scripts/init.sql</span>
+<span class="k">CREATE EXTENSION IF NOT EXISTS</span> <span class="s">"uuid-ossp"</span><span class="p">;</span>  <span class="c">-- UUID generation</span>
+<span class="k">CREATE EXTENSION IF NOT EXISTS</span> <span class="s">"pgcrypto"</span><span class="p">;</span>   <span class="c">-- encryption helpers</span>
+<span class="k">SET</span> timezone <span class="p">=</span> <span class="s">'UTC'</span><span class="p">;</span>                        <span class="c">-- all timestamps in UTC</span></code><div class="label">scripts/init.sql</div></pre>
+
+    <h3>Phase 2 — Alembic Migrations (creates the actual tables)</h3>
+    <p>Alembic is a <strong>database migration tool</strong> — like version control for your database schema. The migration file contains instructions to build every table. You run it once with <code>alembic upgrade head</code>.</p>
+
+    <pre><code><span class="c"># alembic/versions/155b68b3071b_initial_schema.py</span>
+
+<span class="k">def</span> <span class="f">upgrade</span>() -> None:
+    op.<span class="f">create_table</span>(<span class="s">'users'</span>,
+        sa.Column(<span class="s">'id'</span>,       sa.UUID(),         primary_key=True),
+        sa.Column(<span class="s">'username'</span>, sa.String(<span class="g">50</span>),    unique=True),
+        sa.Column(<span class="s">'email'</span>,    sa.String(<span class="g">255</span>),   unique=True),
+        ...
+    )
+    op.<span class="f">create_table</span>(<span class="s">'wallets'</span>,        <span class="c"># depends on users</span>
+        sa.ForeignKeyConstraint([<span class="s">'user_id'</span>], [<span class="s">'users.id'</span>], ondelete=<span class="s">'CASCADE'</span>)
+    )
+    op.<span class="f">create_table</span>(<span class="s">'transactions'</span>,   <span class="c"># depends on wallets (created last)</span>
+        sa.ForeignKeyConstraint([<span class="s">'sender_wallet_id'</span>],   [<span class="s">'wallets.id'</span>]),
+        sa.ForeignKeyConstraint([<span class="s">'receiver_wallet_id'</span>], [<span class="s">'wallets.id'</span>]),
+    )</code><div class="label">alembic/versions/155b68b3071b_initial_schema.py</div></pre>
+
+    <p>The table creation order follows foreign key dependencies:</p>
+
+    <div class="flow">
+      <div class="flow-down">
+        <div class="flow-row"><div class="flow-box green">users</div><div class="flow-note">Created first — everything depends on it</div></div>
+        <div class="flow-connector"></div>
+        <div class="flow-row" style="gap:10px">
+          <div class="flow-box blue" style="font-size:12px">wallets</div>
+          <div class="flow-box blue" style="font-size:12px">trusted_devices</div>
+          <div class="flow-box blue" style="font-size:12px">user_sessions</div>
+          <div class="flow-box blue" style="font-size:12px">webauthn_credentials</div>
+          <div class="flow-box blue" style="font-size:12px">security_logs</div>
+        </div>
+        <div class="flow-connector"></div>
+        <div class="flow-row"><div class="flow-box yellow">transactions</div><div class="flow-note">Created last — needs wallets.id</div></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- SQLAlchemy ORM -->
+  <div class="section" id="sqlalchemy">
+    <div class="section-header">
+      <div class="section-icon icon-blue">⚙️</div>
+      <div>
+        <div class="section-title">SQLAlchemy ORM — Python ↔ Database</div>
+        <div class="section-subtitle">How Python objects become database rows</div>
+      </div>
+    </div>
+
+    <p>SQLAlchemy is an <strong>ORM (Object-Relational Mapper)</strong>. Instead of writing raw SQL, you work with Python objects — SQLAlchemy translates them into SQL automatically.</p>
+
+    <div class="flow" style="margin-bottom:20px">
+      <div class="flow-row" style="flex-wrap:wrap; gap:8px">
+        <div class="flow-box green">Python object<br><small style="font-weight:400">User(username="alice")</small></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box blue">SQLAlchemy ORM<br><small style="font-weight:400">models/__init__.py</small></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box yellow">asyncpg driver<br><small style="font-weight:400">Postgres protocol</small></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box red">PostgreSQL<br><small style="font-weight:400">postgres:5432</small></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box purple">Disk<br><small style="font-weight:400">postgres_data volume</small></div>
+      </div>
+    </div>
+
+    <h3>Step 1 — Model defines the table shape</h3>
+    <pre><code><span class="c"># backend/app/models/__init__.py</span>
+<span class="k">class</span> <span class="f">User</span>(Base):
+    __tablename__ = <span class="s">"users"</span>
+
+    id:           Mapped[str]      = mapped_column(UUID(as_uuid=False), primary_key=True,
+                                        default=<span class="k">lambda</span>: str(uuid.uuid4()))
+    username:     Mapped[str]      = mapped_column(String(<span class="g">50</span>), unique=True)
+    email:        Mapped[str]      = mapped_column(String(<span class="g">255</span>), unique=True)
+    display_name: Mapped[str]      = mapped_column(String(<span class="g">100</span>))
+    is_active:    Mapped[bool]     = mapped_column(Boolean, default=True)
+    created_at:   Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+    wallet:  Mapped[<span class="s">"Wallet"</span>]            = relationship(...)  <span class="c"># link to wallet row</span>
+    webauthn_credentials: Mapped[list[...]] = relationship(...)  <span class="c"># link to biometric keys</span></code><div class="label">models/__init__.py</div></pre>
+
+    <h3>Step 2 — get_db() provides a session for each request</h3>
+    <pre><code><span class="c"># backend/app/core/database.py</span>
+<span class="k">async def</span> <span class="f">get_db</span>() -> AsyncSession:
+    <span class="k">async with</span> AsyncSessionLocal() <span class="k">as</span> <span class="n">session</span>:
+        <span class="k">try</span>:
+            <span class="k">yield</span> <span class="n">session</span>           <span class="c"># endpoint receives this session</span>
+            <span class="k">await</span> <span class="n">session</span>.<span class="f">commit</span>()  <span class="c"># ← auto-commit on success</span>
+        <span class="k">except</span> Exception:
+            <span class="k">await</span> <span class="n">session</span>.<span class="f">rollback</span>() <span class="c"># ← undo everything on error</span>
+            <span class="k">raise</span>
+        <span class="k">finally</span>:
+            <span class="k">await</span> <span class="n">session</span>.<span class="f">close</span>()</code><div class="label">database.py</div></pre>
+
+    <h3>Step 3 — Endpoint writes to the database</h3>
+    <pre><code><span class="c"># In any FastAPI endpoint</span>
+<span class="k">async def</span> <span class="f">register_user</span>(payload, db: AsyncSession = Depends(<span class="f">get_db</span>)):
+
+    <span class="c"># 1. Create Python object</span>
+    <span class="n">new_user</span> = <span class="f">User</span>(username=payload.username, email=payload.email)
+
+    <span class="c"># 2. Queue an INSERT (nothing sent to DB yet)</span>
+    db.<span class="f">add</span>(<span class="n">new_user</span>)
+
+    <span class="c"># 3. Commit — THIS is when the SQL INSERT fires</span>
+    <span class="k">await</span> db.<span class="f">commit</span>()  <span class="c"># → INSERT INTO users (id, username, ...) VALUES (...)</span></code><div class="label">any endpoint</div></pre>
+
+    <div class="callout success">
+      <div class="callout-icon">✅</div>
+      <div><p><strong>Atomic transactions:</strong> If you <code>db.add(user)</code> and <code>db.add(wallet)</code> before a single <code>commit()</code>, either <em>both</em> are saved or <em>neither</em> is. A crash halfway through won't leave a user without a wallet.</p></div>
+    </div>
+
+    <h3>Connection Pool — efficient reuse</h3>
+    <pre><code><span class="c"># database.py — pool settings</span>
+engine = <span class="f">create_async_engine</span>(
+    settings.DATABASE_URL,
+    pool_size=<span class="g">10</span>,      <span class="c"># keep 10 connections open and ready</span>
+    max_overflow=<span class="g">20</span>,  <span class="c"># allow up to 20 extra under heavy load</span>
+    pool_pre_ping=<span class="g">True</span>, <span class="c"># test connection before handing it to a request</span>
+)</code><div class="label">database.py</div></pre>
+    <p>Instead of opening a new connection for every request (expensive), SQLAlchemy reuses a pool of 10 kept-alive connections. Under high load it can temporarily open 20 more.</p>
+  </div>
+
+
+  <!-- Volumes -->
+  <div class="section" id="volumes">
+    <div class="section-header">
+      <div class="section-icon icon-yellow">💾</div>
+      <div>
+        <div class="section-title">Data Persistence — Docker Volumes</div>
+        <div class="section-subtitle">Why your data survives container restarts</div>
+      </div>
+    </div>
+
+    <p>Containers are <strong>ephemeral by default</strong> — delete the container and all its data vanishes. Docker <strong>volumes</strong> solve this by mapping a folder inside the container to a managed folder on your real hard drive.</p>
+
+    <pre><code><span class="c"># docker-compose.yml</span>
+<span class="n">postgres</span><span class="p">:</span>
+  volumes:
+    <span class="p">- <span class="g">postgres_data</span>:/var/lib/postgresql/data</span>
+    <span class="c">#    ↑ named volume          ↑ postgres writes here inside container</span>
+    <span class="c">#    lives on YOUR hard drive (managed by Docker)</span>
+
+<span class="n">redis</span><span class="p">:</span>
+  volumes:
+    <span class="p">- <span class="g">redis_data</span>:/data</span>          <span class="c"># redis AOF log (append-only file)</span>
+  command: redis-server --appendonly <span class="g">yes</span>   <span class="c"># write every change to disk</span></code><div class="label">docker-compose.yml</div></pre>
+
+    <div class="cards-grid">
+      <div class="card">
+        <div class="card-title">🐘 postgres_data</div>
+        <p>All PostgreSQL data files. Survives <code>docker compose down</code>. Only destroyed with <code>docker compose down -v</code>.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">⚡ redis_data</div>
+        <p>Redis AOF (append-only file). Every write is logged to disk, so Redis can recover its state after a restart.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">📋 nginx_logs</div>
+        <p>Nginx access and error logs. Useful for tracing which requests came in and any routing errors.</p>
+      </div>
+    </div>
+
+    <div class="callout danger">
+      <div class="callout-icon">🚨</div>
+      <div><p><strong>Danger:</strong> Running <code>docker compose down -v</code> deletes ALL volumes — meaning all your users, wallets, and transactions are permanently gone. Use plain <code>docker compose down</code> to stop without destroying data.</p></div>
+    </div>
+  </div>
+
+
+  <!-- E2E Registration -->
+  <div class="section" id="registration-e2e">
+    <div class="section-header">
+      <div class="section-icon icon-green">🔄</div>
+      <div>
+        <div class="section-title">End-to-End: "User Registers" Data Flow</div>
+        <div class="section-subtitle">Following one request all the way from browser to disk</div>
+      </div>
+    </div>
+
+    <div class="flow">
+      <div class="flow-down">
+        <div class="flow-row"><div class="flow-box blue">1. Browser submits form</div><div class="flow-note">username + email + display_name</div></div>
+        <div class="flow-connector"></div>
+        <div class="flow-row"><div class="flow-box yellow">2. Nginx receives HTTPS request</div><div class="flow-note">SSL termination, forwards to Flask on :5000</div></div>
+        <div class="flow-connector"></div>
+        <div class="flow-row"><div class="flow-box green">3. Flask forwards to FastAPI</div><div class="flow-note">http://backend:8000/api/v1/auth/register</div></div>
+        <div class="flow-connector"></div>
+        <div class="flow-row"><div class="flow-box blue">4. Pydantic validates input</div><div class="flow-note">username regex, email format — rejects bad data before DB</div></div>
+        <div class="flow-connector"></div>
+        <div class="flow-row"><div class="flow-box green">5. Endpoint creates objects</div><div class="flow-note">User() + Wallet() Python objects, db.add() both</div></div>
+        <div class="flow-connector"></div>
+        <div class="flow-row"><div class="flow-box yellow">6. await db.commit()</div><div class="flow-note">SQLAlchemy fires 2 INSERTs in one transaction</div></div>
+        <div class="flow-connector"></div>
+        <div class="flow-row"><div class="flow-box red">7. PostgreSQL writes to disk</div><div class="flow-note">/var/lib/postgresql/data = postgres_data volume on your hard drive</div></div>
+        <div class="flow-connector"></div>
+        <div class="flow-row"><div class="flow-box purple">8. Response goes back</div><div class="flow-note">{ user_id: "..." } → Flask → Nginx → Browser</div></div>
+      </div>
+    </div>
+  </div>
+
+
+  <hr>
+
+
+  <!-- ═══ PART 2: DEBUGGING ═══ -->
+  <div class="section" id="debug-overview">
+    <div class="section-header">
+      <div class="section-icon icon-red">🐛</div>
+      <div>
+        <div class="section-title">Debugging the Login Button — Where to Put Breakpoints</div>
+        <div class="section-subtitle">A breakpoint is a pause button — code freezes so you can inspect every variable</div>
+      </div>
+    </div>
+
+    <p>When you click "Sign in with biometric", your request travels through <strong>4 layers</strong>. A bug can hide in any one of them. The strategy is to pause at key checkpoints in each layer and inspect what's happening.</p>
+
+    <div class="flow" style="margin-bottom:24px">
+      <div class="flow-row" style="flex-wrap:wrap; gap:8px">
+        <div class="flow-box" style="border-color:#ff79c650;color:#ff79c6">Layer 1<br><small style="font-weight:400">Browser JS (login.js)</small></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box blue">Layer 2<br><small style="font-weight:400">Flask proxy (auth.py)</small></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box yellow">Layer 3<br><small style="font-weight:400">FastAPI (webauthn.py)</small></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box green">Layer 4<br><small style="font-weight:400">Service (webauthn_service.py)</small></div>
+      </div>
+    </div>
+
+    <div class="callout info">
+      <div class="callout-icon">🎯</div>
+      <div><p><strong>Start at Layer 1, line 48</strong> — it immediately tells you whether the problem is in the browser or the backend. If <code>optOk</code> is <code>false</code> there, skip to Layers 3 &amp; 4. If it's <code>true</code>, focus on the biometric step or Layer 2.</p></div>
+    </div>
+  </div>
+
+
+  <!-- Layer 1 — JS -->
+  <div class="section" id="layer-js">
+    <div class="section-header">
+      <div class="section-icon" style="background:#ff79c620;border:1px solid #ff79c640">🌐</div>
+      <div>
+        <div class="section-title">Layer 1 — Browser JavaScript</div>
+        <div class="section-subtitle">Chrome DevTools → F12 → Sources → login.js</div>
+      </div>
+    </div>
+
+    <div class="layer-badge layer-1">Layer 1 — Browser JS</div>
+
+    <p>Open Chrome DevTools with <code>F12</code>, go to <strong>Sources</strong>, find <code>login.js</code>, and click the line number to set a red dot breakpoint.</p>
+
+    <!-- BP 1 -->
+    <h3><span class="bp-num">1</span> &nbsp;Click handler start — <span class="bp-line">line 31</span></h3>
+    <pre><code>loginBtn.<span class="f">addEventListener</span>(<span class="s">'click'</span>, <span class="k">async</span> () => {
+    <span class="k">const</span> <span class="n">username</span> = usernameInput.value.<span class="f">trim</span>().<span class="f">toLowerCase</span>();
+    <span class="g">// ← BREAKPOINT HERE (line 31)</span>
+    <span class="f">hideError</span>();</code><div class="label">login.js : 31</div></pre>
+    <ul class="check-list">
+      <li>Is <code>username</code> the value you typed?</li>
+      <li>Is it empty <code>""</code>? (would skip to showError)</li>
+      <li>Is <code>WebAuthnHelper.isSupported()</code> returning <code>true</code>?</li>
+    </ul>
+
+    <!-- BP 2 -->
+    <h3><span class="bp-num">2</span> &nbsp;After backend challenge request — <span class="bp-line">line 48</span></h3>
+    <pre><code><span class="k">const</span> { ok: <span class="n">optOk</span>, data: <span class="n">optData</span> } = <span class="k">await</span> BioPay.<span class="f">post</span>(
+    <span class="s">'/auth/api/webauthn/login/begin'</span>,
+    { username }
+);
+<span class="k">if</span> (!<span class="n">optOk</span>) {
+    <span class="g">// ← BREAKPOINT HERE (line 48)</span>
+    <span class="k">throw new</span> <span class="f">Error</span>(<span class="n">optData</span>.detail || <span class="s">'User not found...'</span>);
+}</code><div class="label">login.js : 48</div></pre>
+    <ul class="check-list">
+      <li><code>optOk = false</code> → backend rejected it, read <code>optData.detail</code> for the reason</li>
+      <li><code>optData = {}</code> (empty) → Flask proxy crashed, move to Layer 2</li>
+      <li><code>optOk = true</code> → <code>optData</code> should have <code>challenge</code>, <code>allowCredentials</code></li>
+    </ul>
+
+    <!-- BP 3 -->
+    <h3><span class="bp-num">3</span> &nbsp;After biometric + complete request — <span class="bp-line">line 56</span></h3>
+    <pre><code><span class="k">const</span> { ok: <span class="n">authOk</span>, data: <span class="n">authData</span> } = <span class="k">await</span> BioPay.<span class="f">post</span>(
+    <span class="s">'/auth/api/webauthn/login/complete'</span>,
+    { username, credential, device_fingerprint, device_name }
+);
+<span class="k">if</span> (!<span class="n">authOk</span>) {
+    <span class="g">// ← BREAKPOINT HERE (line 56)</span>
+    <span class="k">throw new</span> <span class="f">Error</span>(<span class="n">authData</span>.detail || <span class="s">'Authentication failed.'</span>);
+}</code><div class="label">login.js : 56</div></pre>
+    <ul class="check-list">
+      <li><code>authOk = false</code> → look at <code>authData.detail</code> — that's the exact error from the backend</li>
+      <li><code>authOk = true</code> → browser should redirect to <code>/</code> on line 71</li>
+      <li>If redirect happens but you're logged out → session isn't being set in Flask (Layer 2)</li>
+    </ul>
+
+    <!-- BP 4 (catch) -->
+    <h3><span class="bp-num">4</span> &nbsp;Error handler — <span class="bp-line">line 73</span></h3>
+    <pre><code><span class="k">} catch</span> (err) {
+    <span class="k">let</span> <span class="n">msg</span> = err.message || <span class="s">'Authentication failed.'</span>;
+    <span class="k">if</span> (err.name === <span class="s">'NotAllowedError'</span>)   <span class="n">msg</span> = <span class="s">'Biometric prompt dismissed...'</span>;
+    <span class="k">if</span> (err.name === <span class="s">'SecurityError'</span>)     <span class="n">msg</span> = <span class="s">'Security error — use HTTPS'</span>;
+    <span class="k">if</span> (err.name === <span class="s">'InvalidStateError'</span>) <span class="n">msg</span> = <span class="s">'No credential found'</span>;
+    <span class="g">// ← BREAKPOINT HERE (line 73)</span>
+    <span class="f">showError</span>(<span class="n">msg</span>);
+}</code><div class="label">login.js : 73</div></pre>
+    <ul class="check-list">
+      <li>Check <code>err.name</code> — it tells you exactly what type of error WebAuthn threw</li>
+      <li><code>NotAllowedError</code> → user cancelled the biometric prompt</li>
+      <li><code>SecurityError</code> → not running on HTTPS (or localhost)</li>
+    </ul>
+  </div>
+
+
+  <!-- Layer 2 — Flask -->
+  <div class="section" id="layer-flask">
+    <div class="section-header">
+      <div class="section-icon" style="background:#4da6ff20;border:1px solid #4da6ff40">🐍</div>
+      <div>
+        <div class="section-title">Layer 2 — Flask Proxy</div>
+        <div class="section-subtitle">VS Code debugger or temporary print() statements in auth.py</div>
+      </div>
+    </div>
+
+    <div class="layer-badge layer-2">Layer 2 — Flask</div>
+
+    <p>Flask's job is simply to <strong>forward</strong> the request to FastAPI and save the tokens into the session. Most problems here are either a malformed request body or a failure to store the session.</p>
+
+    <!-- BP 5 -->
+    <h3><span class="bp-num">5</span> &nbsp;Login begin — check incoming data — <span class="bp-line">line 59</span></h3>
+    <pre><code><span class="k">@auth_bp.route</span>(<span class="s">"/api/webauthn/login/begin"</span>, methods=[<span class="s">"POST"</span>])
+<span class="k">def</span> <span class="f">api_webauthn_login_begin</span>():
+    <span class="n">data</span> = request.<span class="f">get_json</span>()
+    <span class="g"># ← BREAKPOINT HERE (line 59)</span>
+    resp = api.<span class="f">post</span>(<span class="s">"/api/v1/auth/webauthn/login/begin"</span>, data)</code><div class="label">blueprints/auth.py : 59</div></pre>
+    <ul class="check-list">
+      <li>Is <code>data</code> equal to <code>{"username": "alice"}</code>?</li>
+      <li>Is <code>data</code> <code>None</code>? → the browser sent non-JSON or wrong Content-Type</li>
+    </ul>
+
+    <!-- BP 6 -->
+    <h3><span class="bp-num">6</span> &nbsp;Check backend response — <span class="bp-line">line 63</span></h3>
+    <pre><code>    resp = api.<span class="f">post</span>(<span class="s">"/api/v1/auth/webauthn/login/begin"</span>, data)
+    <span class="g"># ← BREAKPOINT HERE (line 63)</span>
+    <span class="k">return</span> <span class="f">jsonify</span>(resp.<span class="f">json</span>()), resp.status_code</code><div class="label">blueprints/auth.py : 63</div></pre>
+    <ul class="check-list">
+      <li><code>resp.status_code</code> — is it 200? If 404/400/500 → backend is failing</li>
+      <li><code>resp.json()</code> — does it have <code>challenge</code> and <code>allowCredentials</code>?</li>
+    </ul>
+
+    <!-- BP 7 -->
+    <h3><span class="bp-num">7</span> &nbsp;Session storage after login complete — <span class="bp-line">line 68</span></h3>
+    <pre><code><span class="k">@auth_bp.route</span>(<span class="s">"/api/webauthn/login/complete"</span>, methods=[<span class="s">"POST"</span>])
+<span class="k">def</span> <span class="f">api_webauthn_login_complete</span>():
+    data = request.<span class="f">get_json</span>()
+    resp = api.<span class="f">post</span>(<span class="s">"/api/v1/auth/webauthn/login/complete"</span>, data)
+    <span class="k">if</span> resp.status_code == <span class="g">200</span>:
+        body = resp.<span class="f">json</span>()
+        session[<span class="s">"access_token"</span>]  = body[<span class="s">"access_token"</span>]
+        session[<span class="s">"refresh_token"</span>] = body[<span class="s">"refresh_token"</span>]
+        session[<span class="s">"user"</span>]         = body[<span class="s">"user"</span>]
+        <span class="g"># ← BREAKPOINT HERE (line 68)</span>
+    <span class="k">return</span> <span class="f">jsonify</span>(resp.<span class="f">json</span>()), resp.status_code</code><div class="label">blueprints/auth.py : 68</div></pre>
+    <ul class="check-list">
+      <li>Is <code>body</code> populated? Does it have <code>access_token</code>?</li>
+      <li>Is <code>session["access_token"]</code> being set? (If not, you'll be logged out immediately)</li>
+      <li>If <code>resp.status_code</code> is not 200 here, the block is skipped → no session stored</li>
+    </ul>
+  </div>
+
+
+  <!-- Layer 3 — FastAPI -->
+  <div class="section" id="layer-fastapi">
+    <div class="section-header">
+      <div class="section-icon" style="background:#f0c04020;border:1px solid #f0c04040">⚡</div>
+      <div>
+        <div class="section-title">Layer 3 — FastAPI Endpoint</div>
+        <div class="section-subtitle">VS Code debugger with launch.json or uvicorn debug mode — webauthn.py</div>
+      </div>
+    </div>
+
+    <div class="layer-badge layer-3">Layer 3 — FastAPI</div>
+
+    <!-- BP 8 -->
+    <h3><span class="bp-num">8</span> &nbsp;User lookup in login begin — <span class="bp-line">line 91</span></h3>
+    <pre><code><span class="k">async def</span> <span class="f">webauthn_login_begin</span>(payload, db):
+    result = <span class="k">await</span> db.<span class="f">execute</span>(
+        <span class="f">select</span>(User).<span class="f">where</span>(User.username == payload.username.<span class="f">lower</span>(),
+                           User.is_active == True)
+    )
+    <span class="n">user</span> = result.<span class="f">scalar_one_or_none</span>()
+    <span class="k">if not</span> <span class="n">user</span>:
+        <span class="g"># ← BREAKPOINT HERE (line 91)</span>
+        <span class="k">raise</span> HTTPException(status_code=<span class="r">404</span>, detail=<span class="s">"User not found"</span>)</code><div class="label">api/v1/endpoints/webauthn.py : 91</div></pre>
+    <ul class="check-list">
+      <li>Is <code>user</code> <code>None</code>? → username doesn't exist in DB or <code>is_active = False</code></li>
+      <li>If user is found, check <code>user.username</code>, <code>user.is_active</code>, <code>user.is_verified</code></li>
+    </ul>
+
+    <!-- BP 9 -->
+    <h3><span class="bp-num">9</span> &nbsp;Authentication error catch — <span class="bp-line">line 120</span></h3>
+    <pre><code>    <span class="k">try</span>:
+        <span class="k">await</span> webauthn_service.<span class="f">complete_authentication</span>(user, payload.credential, db)
+    <span class="k">except ValueError as</span> <span class="n">e</span>:
+        <span class="g"># ← BREAKPOINT HERE (line 120)</span>
+        db.<span class="f">add</span>(SecurityLog(event_type=SecurityEventType.LOGIN_FAILED, ...))
+        <span class="k">await</span> db.<span class="f">commit</span>()
+        <span class="k">raise</span> HTTPException(status_code=<span class="r">401</span>, detail=<span class="f">str</span>(<span class="n">e</span>))</code><div class="label">api/v1/endpoints/webauthn.py : 120</div></pre>
+    <ul class="check-list">
+      <li>Is the <code>except</code> block being reached? What is <code>str(e)</code>? That's the exact failure message.</li>
+      <li>"Challenge expired" → Redis issue (see Layer 4, BP 11)</li>
+      <li>"Biometric verification failed" → origin mismatch or bad credential (see Layer 4, BP 12)</li>
+    </ul>
+  </div>
+
+
+  <!-- Layer 4 — Service -->
+  <div class="section" id="layer-service">
+    <div class="section-header">
+      <div class="section-icon icon-green">🔑</div>
+      <div>
+        <div class="section-title">Layer 4 — Service Logic (Most Important)</div>
+        <div class="section-subtitle">The real verification happens here — webauthn_service.py</div>
+      </div>
+    </div>
+
+    <div class="layer-badge layer-4">Layer 4 — Service</div>
+
+    <p>This is where most login failures actually occur. The service checks Redis for the challenge, finds the matching credential, and verifies the biometric signature.</p>
+
+    <!-- BP 10 -->
+    <h3><span class="bp-num">10</span> &nbsp;Redis challenge retrieval — <span class="bp-line">line 183</span></h3>
+    <pre><code><span class="k">async def</span> <span class="f">complete_authentication</span>(self, user, credential_data, db):
+    redis = <span class="f">get_redis</span>()
+    <span class="n">challenge_b64</span> = <span class="k">await</span> redis.<span class="f">get</span>(<span class="s">f"webauthn:auth:{user.id}"</span>)
+    <span class="g"># ← BREAKPOINT HERE (line 183)</span>
+    <span class="k">if not</span> <span class="n">challenge_b64</span>:
+        <span class="k">raise</span> <span class="f">ValueError</span>(<span class="s">"Authentication challenge expired"</span>)</code><div class="label">services/webauthn_service.py : 183</div></pre>
+    <ul class="check-list">
+      <li>Is <code>challenge_b64</code> <code>None</code>? → Redis lost the challenge. Either Redis is down, the 5-minute TTL expired, or <code>user.id</code> doesn't match between <code>begin</code> and <code>complete</code></li>
+      <li>Check <code>user.id</code> — is it the same UUID in both calls?</li>
+    </ul>
+
+    <!-- BP 11 -->
+    <h3><span class="bp-num">11</span> &nbsp;Credential matching — <span class="bp-line">line 199</span></h3>
+    <pre><code>    <span class="n">matched</span> = None
+    <span class="k">for</span> cred <span class="k">in</span> credentials:
+        cred_id_padded = cred.credential_id + <span class="s">"=="</span>
+        decoded = base64.<span class="f">urlsafe_b64decode</span>(cred_id_padded)
+        <span class="k">if</span> base64.<span class="f">urlsafe_b64encode</span>(decoded).<span class="f">decode</span>().<span class="f">rstrip</span>(<span class="s">"="</span>) == raw_id.<span class="f">rstrip</span>(<span class="s">"="</span>):
+            <span class="n">matched</span> = cred
+            <span class="k">break</span>
+    <span class="g"># ← BREAKPOINT HERE (line 199)</span>
+    <span class="k">if not</span> <span class="n">matched</span>:
+        <span class="k">raise</span> <span class="f">ValueError</span>(<span class="s">"Credential not found"</span>)</code><div class="label">services/webauthn_service.py : 199</div></pre>
+    <ul class="check-list">
+      <li>Is <code>matched</code> <code>None</code>? → the credential ID from the browser doesn't match any stored in DB</li>
+      <li>Check <code>raw_id</code> (from browser) vs <code>cred.credential_id</code> (from DB) — are they the same base64url string?</li>
+      <li>If <code>credentials</code> list is empty → user has no registered biometric</li>
+    </ul>
+
+    <!-- BP 12 -->
+    <h3><span class="bp-num">12</span> &nbsp;Signature verification — <span class="bp-line">line 213</span> ⬅ Most common failure</h3>
+    <pre><code>    <span class="k">try</span>:
+        verification = <span class="f">verify_authentication_response</span>(
+            credential=credential_data,
+            expected_challenge=challenge,
+            expected_rp_id=<span class="f">self._rp_id</span>(),       <span class="c"># "localhost" in dev</span>
+            expected_origin=<span class="f">self._origin</span>(),      <span class="c"># MUST match browser URL</span>
+            <span class="g"># ← BREAKPOINT HERE (line 213)</span>
+            credential_public_key=pub_key_bytes,
+            credential_current_sign_count=matched.sign_count,
+            require_user_verification=True,
+        )
+    <span class="k">except Exception as</span> <span class="n">e</span>:
+        <span class="k">raise</span> <span class="f">ValueError</span>(<span class="s">f"Biometric verification failed: {e}"</span>)</code><div class="label">services/webauthn_service.py : 213</div></pre>
+    <ul class="check-list">
+      <li>What is <code>self._origin()</code>? Must exactly match the browser URL — e.g. <code>"https://localhost"</code> not <code>"http://localhost:5000"</code></li>
+      <li>What is <code>self._rp_id()</code>? Should be <code>"localhost"</code> for local dev</li>
+      <li>Is <code>challenge</code> the right bytes? Compare it to what was sent in the browser's options</li>
+    </ul>
+
+    <div class="callout danger">
+      <div class="callout-icon">🚨</div>
+      <div><p><strong>Origin mismatch is the #1 cause of login failures.</strong> The value of <code>WEBAUTHN_ORIGIN</code> in your <code>.env</code> file must exactly match the URL your browser shows — including the protocol (<code>https://</code> vs <code>http://</code>) and port number.</p></div>
+    </div>
+  </div>
+
+
+  <!-- Symptom Guide -->
+  <div class="section" id="symptom-guide">
+    <div class="section-header">
+      <div class="section-icon icon-red">📋</div>
+      <div>
+        <div class="section-title">Symptom → Breakpoint Quick Reference</div>
+        <div class="section-subtitle">Know the symptom, go straight to the right breakpoint</div>
+      </div>
+    </div>
+
+    <table class="bp-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Symptom you see</th>
+          <th>File</th>
+          <th>Line</th>
+          <th>What to check</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="bp-num">1</span></td>
+          <td>Button does nothing at all</td>
+          <td><span class="bp-file">login.js</span></td>
+          <td><span class="bp-line">31</span></td>
+          <td>Is JS even running? Is the event listener attached?</td>
+        </tr>
+        <tr>
+          <td><span class="bp-num">2</span></td>
+          <td>"Please enter your username"</td>
+          <td><span class="bp-file">login.js</span></td>
+          <td><span class="bp-line">34</span></td>
+          <td><code>username</code> is empty after trim</td>
+        </tr>
+        <tr>
+          <td><span class="bp-num">3</span></td>
+          <td>"Browser does not support WebAuthn"</td>
+          <td><span class="bp-file">login.js</span></td>
+          <td><span class="bp-line">36</span></td>
+          <td>Check <code>WebAuthnHelper.isSupported()</code> — need HTTPS or localhost</td>
+        </tr>
+        <tr>
+          <td><span class="bp-num">4</span></td>
+          <td>"User not found" error</td>
+          <td><span class="bp-file">webauthn.py</span></td>
+          <td><span class="bp-line">91</span></td>
+          <td>DB user lookup returned None</td>
+        </tr>
+        <tr>
+          <td><span class="bp-num">5</span></td>
+          <td>Biometric prompt never appears</td>
+          <td><span class="bp-file">login.js</span></td>
+          <td><span class="bp-line">48</span></td>
+          <td><code>optOk</code> is false — backend rejected login/begin</td>
+        </tr>
+        <tr>
+          <td><span class="bp-num">6</span></td>
+          <td>"Biometric prompt dismissed"</td>
+          <td><span class="bp-file">login.js</span></td>
+          <td><span class="bp-line">73</span></td>
+          <td><code>err.name === "NotAllowedError"</code> — user cancelled</td>
+        </tr>
+        <tr>
+          <td><span class="bp-num">7</span></td>
+          <td>"Authentication challenge expired"</td>
+          <td><span class="bp-file">webauthn_service.py</span></td>
+          <td><span class="bp-line">183</span></td>
+          <td>Redis returned None — check Redis connection + TTL</td>
+        </tr>
+        <tr>
+          <td><span class="bp-num">8</span></td>
+          <td>"Credential not found"</td>
+          <td><span class="bp-file">webauthn_service.py</span></td>
+          <td><span class="bp-line">199</span></td>
+          <td><code>matched</code> is None — credential IDs don't match</td>
+        </tr>
+        <tr>
+          <td><span class="bp-num">9</span></td>
+          <td>"Biometric verification failed"</td>
+          <td><span class="bp-file">webauthn_service.py</span></td>
+          <td><span class="bp-line">213</span></td>
+          <td>Check <code>expected_origin</code> vs browser URL — #1 cause</td>
+        </tr>
+        <tr>
+          <td><span class="bp-num">10</span></td>
+          <td>Login "succeeds" but redirect to dashboard, then logged out</td>
+          <td><span class="bp-file">auth.py</span></td>
+          <td><span class="bp-line">68</span></td>
+          <td>Flask session not being set — check <code>body["access_token"]</code></td>
+        </tr>
+        <tr>
+          <td><span class="bp-num">11</span></td>
+          <td>500 error (server error)</td>
+          <td><span class="bp-file">webauthn.py</span></td>
+          <td><span class="bp-line">120</span></td>
+          <td>Unhandled exception — check backend logs for stack trace</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Quick start checklist before debugging</h3>
+    <ul class="check-list">
+      <li>Are all 5 Docker containers running? (<code>docker compose ps</code>)</li>
+      <li>Is the browser URL exactly matching <code>WEBAUTHN_ORIGIN</code> in your <code>.env</code>?</li>
+      <li>Did you run <code>alembic upgrade head</code> to create the tables?</li>
+      <li>Did you register a biometric first before trying to log in?</li>
+      <li>Is Redis reachable? (<code>docker compose logs redis</code>)</li>
+    </ul>
+  </div>
+
+
+  <!-- Footer -->
+  <div class="footer">
+    <span>BioPay Developer Guide</span>
+    <span class="footer-dot">●</span>
+    <span>Project Overview · Docker &amp; Database · Debugging</span>
+    <span class="footer-dot">●</span>
+    <span>FastAPI · Flask · PostgreSQL · Redis · WebAuthn</span>
+  </div>
+
+</main>
+
+<script>
+  // Highlight active nav item on scroll
+  const sections = document.querySelectorAll('.section[id]');
+  const navItems = document.querySelectorAll('.nav-item');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navItems.forEach(n => n.classList.remove('active'));
+        const active = document.querySelector(`.nav-item[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+
+  // Smooth scroll
+  navItems.forEach(item => {
+    item.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.querySelector(item.getAttribute('href'));
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+</script>
+</body>
+</html>
