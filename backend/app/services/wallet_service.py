@@ -89,7 +89,7 @@ class WalletService:
         db: AsyncSession,
         ip_address: Optional[str] = None,
     ) -> Transaction:
-        # Load receiver first (needed for wallet lock ordering)
+        # ── Step 1: Validate receiver exists (no lock needed yet) ──
         result = await db.execute(
             select(User).where(User.username == receiver_username.lower(), User.is_active == True)
         )
@@ -99,6 +99,7 @@ class WalletService:
         if receiver.id == sender.id:
             raise ValueError("Cannot send money to yourself")
 
+        # ── Step 2 & 3: Acquire exclusive row locks (SELECT ... FOR UPDATE) ──
         # Lock both wallets in consistent ID order to prevent deadlocks under concurrency
         wallets_result = await db.execute(
             select(Wallet)
@@ -108,12 +109,15 @@ class WalletService:
         )
         wallets = {w.user_id: w for w in wallets_result.scalars().all()}
 
+        # ── Step 4: Validate balances AFTER locks are held ──
+        # This is the critical security fix: the balance check now runs
+        # while we hold an exclusive lock, so no concurrent request can
+        # read a stale balance and pass this check simultaneously.
         sender_wallet = wallets.get(sender.id)
         if not sender_wallet:
             raise ValueError("Sender wallet not found")
         if sender_wallet.is_frozen:
             raise ValueError("Your wallet is frozen")
-
         receiver_wallet = wallets.get(receiver.id)
         if not receiver_wallet:
             raise ValueError("Receiver wallet not found")
@@ -124,8 +128,13 @@ class WalletService:
             raise ValueError("Insufficient balance")
 
         fee = round(amount * Decimal("0.001"), 2)  # 0.1% fee
+        total_debit = amount + fee
 
-        sender_wallet.balance -= (amount + fee)
+        if sender_wallet.balance < total_debit:
+            raise ValueError("Insufficient balance")
+
+        # ── Step 5: Atomic balance mutation (under lock) ──
+        sender_wallet.balance -= total_debit
         receiver_wallet.balance += amount
 
         tx = Transaction(

@@ -22,7 +22,7 @@ def _get_real_ip(request: Request) -> str:
     """Use the direct peer address — never trust X-Forwarded-For for rate-limiting."""
     return request.client.host if request.client else "unknown"
 
-limiter = Limiter(key_func=_get_real_ip)
+limiter = Limiter(key_func=_get_real_ip, storage_uri=settings.REDIS_URL)
 
 
 @asynccontextmanager

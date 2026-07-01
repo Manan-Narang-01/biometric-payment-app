@@ -73,7 +73,7 @@ async def refresh_token(
         raise HTTPException(status_code=401, detail="Token has been revoked")
 
     user_id = token_data["sub"]
-    session_id = token_data["session_id"]
+    old_session_id = token_data["session_id"]
 
     result = await db.execute(select(User).where(User.id == user_id, User.is_active == True))
     user = result.scalar_one_or_none()
@@ -85,7 +85,13 @@ async def refresh_token(
     if ttl > 0:
         await redis.setex(f"revoked:refresh:{jti}", ttl, "1")
 
-    # Issue new tokens
+    # ── Security Fix: Invalidate old session BEFORE creating new one ──
+    # Without this, the old session remains alive in Redis until it
+    # naturally expires.  If the refresh token was stolen, the attacker
+    # retains a valid session even after the real user refreshes.
+    await redis.delete(f"session:{old_session_id}")
+
+    # Issue new tokens with a fresh session
     new_session_id = str(uuid.uuid4())
     access_token = create_access_token(user.id, new_session_id)
     new_refresh_token = create_refresh_token(user.id, new_session_id)
